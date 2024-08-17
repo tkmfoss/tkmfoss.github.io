@@ -16,6 +16,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth !important;
+}
+
 /* body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -29,5 +33,25 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  flex: 0 0 80%;
+  min-width: 0;
+  margin-right: 15px;
+}
+
+@media (min-width: 1024px) {
+  .embla__slide {
+    flex: 0 0 50%;
   }
 }

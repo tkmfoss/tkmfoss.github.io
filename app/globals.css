@@ -52,6 +52,6 @@ html {
 
 @media (min-width: 1024px) {
   .embla__slide {
-    flex: 0 0 50%;
+    flex: 0 0 40%;
   }
 }

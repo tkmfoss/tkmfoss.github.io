@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import FOSSCellIcon from "../public/logo.png";
+import FOSSCellIcon from "../public/images/fosscell-logo.png";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { useScrollspy } from "../hooks/scrollspy";

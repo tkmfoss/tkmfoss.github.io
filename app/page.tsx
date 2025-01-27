@@ -2,7 +2,7 @@
 
 import { EventCarousel } from "@/components/EventCarousel";
 import Image from "next/image";
-import SectionImage from "../public/section.png";
+import SectionImage from "../public/section-placeholder.png";
 import { Header } from "@/components/Header";
 import Link from "next/link";
 
@@ -52,7 +52,7 @@ export default function Page() {
 
           <div className="hidden lg:block lg:w-1/2">
             <Image
-              src={"/HeroImage.svg"}
+              src={"/images/HeroImage.svg"}
               alt="Hero image"
               width={0}
               height={0}

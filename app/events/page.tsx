@@ -41,15 +41,13 @@ export default function Page() {
                         alt="Event image"
                         width={512}
                         height={512}
-                        className="w-full md:w-1/2 object-cover rounded group-hover:grayscale transition-all duration-200 ease-in-out"
+                        className="h-80 w-full md:w-80 object-cover rounded group-hover:grayscale transition-all duration-200 ease-in-out"
                       />
                       <div className="p-6  space-y-2">
                         <div className="text-sm">
                           {formatDateDisplay(event.date)}
                         </div>
-                        <div className="font-bold text-2xl">
-                          {event.title} title
-                        </div>
+                        <div className="font-bold text-2xl">{event.title}</div>
                         <div>{event.short_description}</div>
                       </div>
                     </Link>

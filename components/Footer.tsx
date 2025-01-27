@@ -1,11 +1,13 @@
 import Image from "next/image";
-import FOSSCellIcon from "../public/logo.png";
+import FOSSCellIcon from "../public/images/fosscell-logo.png";
 import {
   FaWhatsapp,
   FaInstagram,
   FaXTwitter,
   FaGithub,
   FaRegEnvelope,
+  FaLinkedin,
+  FaDiscord,
 } from "react-icons/fa6";
 import Link from "next/link";
 
@@ -23,33 +25,41 @@ export function Footer() {
           </div>
         </div>
         <div className="flex gap-4">
-          <Link href={"https://github.com"}>
+          <Link href="https://github.com/tkmfoss">
             <FaGithub
-              title="Link to FOSSCell TKMCE's GitHub account"
+              title="Link to FOSSCell TKMCE's GitHub organization"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"
               size={20}
             />
           </Link>
-          <FaRegEnvelope
-            title="E-mail address of FOSSCell TKMCE"
-            className="text-neutral-400 hover:text-primary-700 cursor-pointer"
-            size={20}
-          />
-          <FaInstagram
-            title="Link to FOSSCell TKMCE's Instagram"
-            className="text-neutral-400 hover:text-primary-700 cursor-pointer"
-            size={20}
-          />
-          <FaWhatsapp
-            title="Link to FOSSCell TKMCE's WhatsApp channel"
-            className="text-neutral-400 hover:text-primary-700 cursor-pointer"
-            size={20}
-          />
-          <FaXTwitter
-            title="Link to FOSSCell TKMCE's Twitter page"
-            className="text-neutral-400 hover:text-primary-700 cursor-pointer"
-            size={20}
-          />
+          <Link href="mailto:fosscelltkmce@gmail.com">
+            <FaRegEnvelope
+              title="E-mail address of FOSSCell TKMCE"
+              className="text-neutral-400 hover:text-primary-700 cursor-pointer"
+              size={20}
+            />
+          </Link>
+          <Link href="https://instagram.com/tkmcefosscell">
+            <FaInstagram
+              title="Link to FOSSCell TKMCE's Instagram"
+              className="text-neutral-400 hover:text-primary-700 cursor-pointer"
+              size={20}
+            />
+          </Link>
+          <Link href="https://www.linkedin.com/company/foss-tkmce">
+            <FaLinkedin
+              title="Link to FOSSCell TKMCE's LinkedIn"
+              className="text-neutral-400 hover:text-primary-700 cursor-pointer"
+              size={20}
+            />
+          </Link>
+          <Link href="https://discord.gg/uXrWyWqvWx">
+            <FaDiscord
+              title="Link to FOSSCell TKMCE's Discord channel"
+              className="text-neutral-400 hover:text-primary-700 cursor-pointer"
+              size={20}
+            />
+          </Link>
         </div>
       </div>
 

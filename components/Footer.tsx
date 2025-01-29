@@ -25,35 +25,38 @@ export function Footer() {
           </div>
         </div>
         <div className="flex gap-4">
-          <Link href="https://github.com/tkmfoss">
+          <Link href="https://github.com/tkmfoss" target="_blank">
             <FaGithub
               title="Link to FOSS Cell TKMCE's GitHub organization"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"
               size={20}
             />
           </Link>
-          <Link href="mailto:fosscelltkmce@gmail.com">
+          <Link href="mailto:fosscelltkmce@gmail.com" target="_blank">
             <FaRegEnvelope
               title="E-mail address of FOSS Cell TKMCE"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"
               size={20}
             />
           </Link>
-          <Link href="https://instagram.com/tkmcefosscell">
+          <Link href="https://instagram.com/tkmcefosscell" target="_blank">
             <FaInstagram
               title="Link to FOSS Cell TKMCE's Instagram"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"
               size={20}
             />
           </Link>
-          <Link href="https://www.linkedin.com/company/foss-tkmce">
+          <Link
+            href="https://www.linkedin.com/company/foss-tkmce"
+            target="_blank"
+          >
             <FaLinkedin
               title="Link to FOSS Cell TKMCE's LinkedIn"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"
               size={20}
             />
           </Link>
-          <Link href="https://discord.gg/uXrWyWqvWx">
+          <Link href="https://discord.gg/uXrWyWqvWx" target="_blank">
             <FaDiscord
               title="Link to FOSS Cell TKMCE's Discord channel"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"

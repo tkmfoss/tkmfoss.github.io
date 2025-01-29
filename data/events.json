@@ -1,0 +1,15 @@
+{
+    "2024": [
+        {
+            "slug": "beyond-code",
+            "directory": "data/events/2024/beyond-code",
+            "contentFile": "data/events/2024/beyond-code/content.mdx",
+            "year": "2024",
+            "title": "Beyond Code",
+            "date": "2024-12-22T00:00:00.000Z",
+            "coverImage": "data/events/2024/beyond-code/cover.jpg",
+            "description": "ehifbf"
+        }
+    ],
+    "2025": []
+}

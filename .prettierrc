@@ -1,7 +1,8 @@
 {
-  "printWidth": 80,
+  "printWidth": 100,
   "trailingComma": "all",
   "singleQuote": false,
   "semi": true,
-  "quoteProps": "consistent"
+  "quoteProps": "consistent",
+  "overrides": [{ "files": "**/*.ts", "options": { "printWidth": 80 } }]
 }

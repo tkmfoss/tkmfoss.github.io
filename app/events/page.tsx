@@ -19,8 +19,7 @@ export default function Page() {
           <section className="lg:w-1/3 space-y-2 lg:text-right">
             <h1 className="font-bold text-3xl">Events</h1>
             <p>
-              You can find and read all about events organized and conducted by
-              us in the past here.
+              You can find and read all about events organized and conducted by us in the past here.
             </p>
           </section>
 
@@ -33,22 +32,20 @@ export default function Page() {
                     className="group border-2 border-neutral-800 bg-neutral-900 hover:border-primary-500 hover:bg-neutral-800 transition-all duration-200 ease-in-out w-full rounded-md"
                   >
                     <Link
-                      href={`events/${event.event_id}`}
+                      href={`events/${event.year}/${event.slug}`}
                       className="flex flex-col md:flex-row w-full"
                     >
                       <Image
-                        src={event.image}
-                        alt="Event image"
+                        src={event.coverImage}
+                        alt="Event's cover image"
                         width={512}
                         height={512}
                         className="h-80 w-full md:w-80 object-cover rounded group-hover:grayscale transition-all duration-200 ease-in-out"
                       />
                       <div className="p-6  space-y-2">
-                        <div className="text-sm">
-                          {formatDateDisplay(event.date)}
-                        </div>
+                        <div className="text-sm">{formatDateDisplay(event.date)}</div>
                         <div className="font-bold text-2xl">{event.title}</div>
-                        <div>{event.short_description}</div>
+                        <div>{event.description}</div>
                       </div>
                     </Link>
                   </div>

@@ -2,7 +2,7 @@
 
 import { EventCarousel } from "@/components/EventCarousel";
 import Image from "next/image";
-import SectionImage from "../public/section-placeholder.png";
+import SectionImage from "../public/images/section-placeholder.png";
 import { Header } from "@/components/Header";
 import Link from "next/link";
 
@@ -41,7 +41,7 @@ export default function Page() {
             </div>
 
             <p className="text-xl lg:text-3xl text-primary-100 leading-relaxed">
-              FOSSCell is a technical club that promotes and strengthens the
+              FOSS Cell is a technical club that promotes and strengthens the
               Free and Open Source Software ecosystem in TKMCE.
             </p>
 
@@ -98,7 +98,7 @@ export default function Page() {
             <h3 className="font-bold text-3xl mb-4 text-center">who we are</h3>
 
             <p className="text-base text-pretty leading-relaxed">
-              We are FOSSCell TKMCE - a group of students from the{" "}
+              We are FOSS Cell TKMCE - a group of students from the{" "}
               <a className="text-primary-200 font-bold hover:text-primary-500 transition-all duration-300 cursor-pointer">
                 Thangal Kunju Musaliar College of Engineering
               </a>
@@ -124,8 +124,8 @@ export default function Page() {
               Through workshops, training sessions, and software development, we
               empower individuals to explore FOSS, develop new skills, and make
               a meaningful impact. We foster collaboration, community building,
-              and inclusivity, organizing events like FOSSMeet to bring together
-              global experts who share their knowledge and insights.
+              and inclusivity, organizing events to bring together global
+              experts who share their knowledge and insights.
             </p>
           </div>
 

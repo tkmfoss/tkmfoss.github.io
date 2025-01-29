@@ -27,7 +27,7 @@ export const EVENTS: EventSlide[] = [
   },
   {
     date: new Date("2024-10-18"),
-    title: "FOSSCell Orientation",
+    title: "FOSS Cell Orientation",
     image: "/images/events/2024/orientation/cover.jpg",
     event_id: "3",
     short_description:
@@ -64,16 +64,15 @@ export const EVENTS: EventSlide[] = [
     title: "Season of Commits",
     image: "/images/events/2025/season-of-commits/cover.jpg",
     date: new Date("2025-01-13"),
-    event_id: "6",
+    event_id: "7",
     short_description: "Unleashing Open-Source Excellence",
     actual_content: "",
   },
-
   {
     title: "DevOps Workshop",
     image: "/images/events/2025/devops-workshop/cover.jpg",
     date: new Date("2025-01-25"),
-    event_id: "6",
+    event_id: "8",
     short_description:
       "DevOps Essentials Workshop: In Collaboration with CareStack.",
     actual_content: "",

@@ -1,6 +1,6 @@
 import useEmblaCarousel from "embla-carousel-react";
 import EmblaAutoplayPlugin from "embla-carousel-autoplay";
-import { EVENTS } from "@/data/event-carousel";
+import { EVENTS } from "@/data/events";
 import { formatDateDisplay } from "@/lib/utilities";
 import Link from "next/link";
 

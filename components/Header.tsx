@@ -7,8 +7,9 @@ import clsx from "clsx";
 import { useScrollspy } from "../hooks/scrollspy";
 import { FaArrowRight, FaBars } from "react-icons/fa6";
 import Link from "next/link";
+import { announcement } from "@/data/announcement";
 
-const OFFSET = 24 * 4;
+const OFFSET = (announcement != null ? 32 : 24) * 4;
 
 type WithLabel<T> = { label: string } & T;
 
@@ -70,11 +71,17 @@ export function Header(props: HeaderProps) {
         "bg-[#101010] bg-opacity-30 backdrop-filter backdrop-blur-lg",
         "overflow-hidden transition-[max-height] duration-300 ease-in-out",
         {
-          "max-h-24": !isMenuExpanded,
+          "max-h-24": !isMenuExpanded && announcement == null,
+          "max-h-32": !isMenuExpanded && announcement != null,
           "max-h-screen": isMenuExpanded,
         },
       )}
     >
+      {announcement != null && (
+        <div className="flex w-full bg-blue-500 justify-items-center items-center p-2 text-sm">
+          {announcement}
+        </div>
+      )}
       <nav
         id="navbar"
         className="w-full p-7 flex place-items-center justify-between"
@@ -82,7 +89,7 @@ export function Header(props: HeaderProps) {
         <Link href="/">
           <div className="flex place-items-center cursor-pointer">
             <Image src={FOSSCellIcon} height={40} alt="TKMCE FOSSCell Logo" />
-            <div className="font-bold text-2xl mx-8">FOSSCell</div>
+            <div className="font-bold text-2xl mx-8">FOSS Cell</div>
           </div>
         </Link>
 
@@ -109,11 +116,13 @@ export function Header(props: HeaderProps) {
             })}
         </div>
 
-        <div onClick={toggleExpandedMenu} className="block lg:hidden">
+        <div
+          onClick={toggleExpandedMenu}
+          className="block lg:hidden cursor-pointer"
+        >
           <FaBars size={24} />
         </div>
       </nav>
-
       <div className="block lg:hidden p-8 space-y-8 w-fit">
         {props.navbarSections != null && props.navbarSections.length > 0 && (
           <div className="space-y-4">

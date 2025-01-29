@@ -21,7 +21,6 @@ export default function Page() {
             <p>Members who organizes and works behind the events.</p>
           </div>
         </div>
-
         <div>
           <section className="grid grid-cols-3 lg:grid-cols-4 gap-8">
             {MEMBERS_DATA.map((member, i) => {
@@ -45,8 +44,8 @@ function MemberCard({ member }: { member: Member }) {
         className="rounded-md aspect-square object-cover"
       />
       <div className="text-center">
-        <div>{member.name}</div>
-        <div className="text-sm text-neutral-400">{member.caption}</div>
+        <div className="text-sm">{member.name}</div>
+        <div className="text-[12px] text-neutral-400">{member.caption}</div>
       </div>
     </div>
   );

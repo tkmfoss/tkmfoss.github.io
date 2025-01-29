@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import { EVENTS } from "@/data/event-carousel";
+import { EVENTS } from "@/data/events";
 import { formatDateDisplay } from "@/lib/utilities";
 import Image from "next/image";
 import Link from "next/link";

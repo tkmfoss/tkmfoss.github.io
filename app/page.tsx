@@ -26,7 +26,7 @@ export default function Page() {
         <div className="flex flex-col lg:flex-row lg:justify-between gap-8">
           <div className="block w-full items-center lg:hidden">
             <Image
-              src={"/HeroImage.svg"}
+              src={"/images/HeroImage.svg"}
               alt="Hero image"
               width={0}
               height={0}

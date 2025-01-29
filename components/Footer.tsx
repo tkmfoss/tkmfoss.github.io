@@ -64,7 +64,7 @@ export function Footer() {
       </div>
 
       <div className="text-sm text-neutral-400">
-        &copy; 2024 FOSS Cell TKMCE. All rights reserved.
+        &copy; 2024&mdash;2025 FOSS Cell TKMCE. All rights reserved.
       </div>
     </footer>
   );

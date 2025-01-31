@@ -12,13 +12,13 @@ import { useEffect } from "react";
  * https://github.com/vercel/next.js/issues/45187#issuecomment-1639518030
  */
 export default function ScrollFix() {
-  const pathname = usePathname();
+    const pathname = usePathname();
 
-  useEffect(() => {
-    if (window.location.hash === "") {
-      window.scroll({ top: 0, left: 0, behavior: "smooth" });
-    }
-  }, [pathname]);
+    useEffect(() => {
+        if (window.location.hash === "") {
+            window.scroll({ top: 0, left: 0, behavior: "smooth" });
+        }
+    }, [pathname]);
 
-  return <></>;
+    return <></>;
 }

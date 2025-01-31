@@ -1,8 +1,9 @@
 {
-  "printWidth": 100,
-  "trailingComma": "all",
-  "singleQuote": false,
-  "semi": true,
-  "quoteProps": "consistent",
-  "overrides": [{ "files": "**/*.ts", "options": { "printWidth": 80 } }]
+    "printWidth": 100,
+    "trailingComma": "all",
+    "singleQuote": false,
+    "semi": true,
+    "tabWidth": 4,
+    "quoteProps": "consistent",
+    "overrides": [{ "files": "**/*.ts", "options": { "printWidth": 80 } }]
 }

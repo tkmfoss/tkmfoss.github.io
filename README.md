@@ -1,7 +1,7 @@
 # FOSS Cell Website
 
 This repository contains the source code for the main website of FOSS Cell TKMCE.
-The production build is deployed here: <https://fosscell-tkmce.vercel.app>.
+The production build is deployed here: <https://tkmfoss.github.io>.
 
 We welcome contributions from everyone!
 Whether it's bug fixes, improvements, or suggestions, feel free to get involved.

@@ -1,7 +1,8 @@
 import {
     /** ===== MONOSPACED ===== **/
     // Kode_Mono, // good for random usage and hacky feel
-    Victor_Mono, // good for height-y text, big? title?
+    // Victor_Mono, // good for height-y text, big? title?
+    Sometype_Mono, // change of heart
     // Martian_Mono, // badside: too big
     // standard ones
     // Reddit_Mono, // good, more like inconsolata, a slimy feel
@@ -11,4 +12,4 @@ import {
     // Azeret_Mono, // blocky, but less line-space giving overall feeel
 } from "next/font/google";
 
-export const mainFont = Victor_Mono({});
+export const mainFont = Sometype_Mono({ subsets: ["latin"] });

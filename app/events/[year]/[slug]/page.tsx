@@ -5,6 +5,41 @@ import Image from "next/image";
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import { Metadata, ResolvingMetadata } from "next";
+
+interface Params {
+    year: string;
+    slug: string;
+}
+
+interface PageProps {
+    params: Promise<Params>;
+}
+
+export async function generateMetadata(
+    { params }: PageProps,
+    parentMeta: ResolvingMetadata,
+): Promise<Metadata> {
+    const { year, slug } = await params;
+    const parent = await parentMeta;
+    const event = ALL_EVENTS.filter((event) => event.slug === slug).find(
+        (event) => event.year === year,
+    );
+    if (event == null) {
+        return {
+            title: `Page not found | ${parent.title}`,
+            description: parent.description,
+        };
+    }
+    // TODO: OG image generation
+    return {
+        title: `${event.title} | Events | ${parent.title}`,
+        description:
+            event.description != null && event.description.trim().length > 0
+                ? `${event.description}: ${parent.description}`
+                : parent.description,
+    };
+}
 
 export function generateStaticParams(): Params[] {
     return ALL_EVENTS.map((event) => ({
@@ -28,12 +63,7 @@ function Template(props: PropsWithChildren) {
     );
 }
 
-interface Params {
-    year: string;
-    slug: string;
-}
-
-export default async function Page({ params }: { params: Promise<Params> }) {
+export default async function Page({ params }: PageProps) {
     const { slug, year } = await params;
 
     const event = ALL_EVENTS.filter((event) => event.slug === slug).find(

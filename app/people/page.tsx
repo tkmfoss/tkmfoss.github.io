@@ -1,8 +1,11 @@
-"use client";
-
 import Image from "next/image";
 import { Header } from "@/components/Header";
 import { MEMBERS_DATA, Member } from "@/data/people";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Our People | FOSS Cell TKMCE",
+};
 
 export default function Page() {
     return (
@@ -17,7 +20,7 @@ export default function Page() {
             <div className="w-full max-w-screen-2xl mx-auto p-8 space-y-8">
                 <div className="flex flex-col md:flex-row md:place-items-center md:justify-between gap-8">
                     <div className="space-y-2 text-base">
-                        <h1 className="font-bold text-3xl">Our people</h1>
+                        <h1 className="font-bold text-3xl">Our People</h1>
                         <p>Members who organizes and works behind the events.</p>
                     </div>
                 </div>

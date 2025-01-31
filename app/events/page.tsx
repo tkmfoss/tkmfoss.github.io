@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import { EVENTS } from "@/data/events";
+import { ALL_EVENTS } from "@/lib/events";
 import { formatDateDisplay } from "@/lib/utilities";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,8 +24,8 @@ export default function Page() {
           </section>
 
           <section className="grid grid-cols-1 gap-8 lg:border-l-2 lg:border-neutral-800 lg:px-5 lg:w-2/3">
-            {EVENTS.length > 0 ? (
-              EVENTS.map((event, i) => {
+            {ALL_EVENTS.length > 0 ? (
+              ALL_EVENTS.map((event, i) => {
                 return (
                   <div
                     key={`event-${i}`}

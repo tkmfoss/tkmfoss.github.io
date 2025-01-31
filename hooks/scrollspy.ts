@@ -1,3 +1,5 @@
+"use client";
+
 // Credits: Maxime <https://github.com/MaximeHeckel>
 // https://blog.maximeheckel.com/posts/scrollspy-demystified/
 
@@ -8,14 +10,14 @@ export const useScrollspy = (
   options?: {
     offset?: number;
     root?: Element;
-  }
+  },
 ): [number] => {
   const [currentIntersectingElementIndex, setCurrentIntersectingElementIndex] =
     useState(-1);
 
   const rootMargin = `-${(options && options.offset) || 0}px 0px 0px 0px`;
 
-  const observer = useRef<IntersectionObserver>();
+  const observer = useRef<IntersectionObserver>(undefined);
 
   useEffect(() => {
     if (observer.current) {
@@ -37,14 +39,14 @@ export const useScrollspy = (
         root: (options && options.root) || null,
         // use this option to handle custom offset
         rootMargin,
-      }
+      },
     );
 
     const { current: ourObserver } = observer;
 
     // observe all the elements passed as argument of the hook
     elements.forEach((element) =>
-      element ? ourObserver.observe(element) : null
+      element ? ourObserver.observe(element) : null,
     );
 
     return () => ourObserver.disconnect();

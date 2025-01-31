@@ -3,14 +3,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import clsx from "clsx";
 import { Footer } from "@/components/Footer";
-import { victor_mono } from "./fonts";
+import { mainFont } from "./fonts";
 import ScrollFix from "@/components/ScrollFix";
 import { announcement } from "@/data/announcement";
 
 export const metadata: Metadata = {
   title: "FOSS Cell TKMCE",
-  description:
-    "FOSS Cell TKMCE - The FOSS Club of Thangal Kunju Musaliar College of Engineering",
+  description: "FOSS Cell TKMCE - The FOSS Club of Thangal Kunju Musaliar College of Engineering",
 };
 
 export default function RootLayout({
@@ -21,12 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <ScrollFix />
-      <body
-        className={clsx(
-          victor_mono.className,
-          "bg-[#101010] text-white h-screen scroll-smooth",
-        )}
-      >
+      <body className={clsx(mainFont.className, "bg-[#101010] text-white h-screen scroll-smooth")}>
         <div
           className={clsx("flex flex-col", {
             "min-h-[calc(100%-6rem)] mt-[6rem]": announcement == null,

@@ -5,6 +5,6 @@ export interface Event {
   year: string;
   description?: string;
   coverImage: string;
-  directory: string;
   contentFile: string;
+  content: string;
 }

@@ -1,14 +1,6 @@
 import Image from "next/image";
 import FOSSCellIcon from "../public/images/fosscell-logo.png";
-import {
-  FaWhatsapp,
-  FaInstagram,
-  FaXTwitter,
-  FaGithub,
-  FaRegEnvelope,
-  FaLinkedin,
-  FaDiscord,
-} from "react-icons/fa6";
+import { FaInstagram, FaGithub, FaRegEnvelope, FaLinkedin, FaDiscord } from "react-icons/fa6";
 import Link from "next/link";
 
 export function Footer() {
@@ -19,9 +11,7 @@ export function Footer() {
           <Image src={FOSSCellIcon} alt="TKMCE FOSS Cell Logo" width={50} />
           <div>
             <div className="font-bold text-xl">FOSS Cell TKMCE</div>
-            <div className="text-sm">
-              Free and Open-Source Software Community
-            </div>
+            <div className="text-sm">Free and Open-Source Software Community</div>
           </div>
         </div>
         <div className="flex gap-4">
@@ -46,10 +36,7 @@ export function Footer() {
               size={20}
             />
           </Link>
-          <Link
-            href="https://www.linkedin.com/company/foss-tkmce"
-            target="_blank"
-          >
+          <Link href="https://www.linkedin.com/company/foss-tkmce" target="_blank">
             <FaLinkedin
               title="Link to FOSS Cell TKMCE's LinkedIn"
               className="text-neutral-400 hover:text-primary-700 cursor-pointer"

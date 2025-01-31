@@ -57,7 +57,7 @@ export const MEMBERS_DATA: Member[] = [
   },
   {
     name: "Aron Mathew Tom",
-    photo: "/images/people/Aron Mathew Tom.JPG",
+    photo: "/images/people/Aron Mathew Tom.jpg",
     caption: "Design Head",
   },
   {

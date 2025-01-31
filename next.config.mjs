@@ -6,10 +6,8 @@ const nextConfig = {
 
     // GitHub pages deployment configuration:
     output: "export",
-    basePath: "/",
-    images: {
-        unoptimized: true,
-    },
+    trailingSlash: false,
+    images: { unoptimized: true },
 };
 
 const withMDX = createMDX();

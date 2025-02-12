@@ -30,7 +30,6 @@ And it also doesn't matter if you are a part of the club or not!
 - References and credits are given and must be given for the snippets that's not yours. Explanations must be given in most cases and references must be linked if it's a public website.
 - The only reason MDX is used is because of the native support it has in Next.js. Learn more: <https://nextjs.org/docs/app/building-your-application/configuring/mdx>.
 - As of February 2025, the website is fully static.
-- Since this repository lies under an organization and since organizations can't deploy to Vercel unless you have upgraded your account, the website is currently deployed to Vercel by [@dcdunkan](https://github.com/dcdunkan), maintainer of the repository, under **Free billing**, through a [fork](https://github.com/dcdunkan/tkmfoss-website).
 
 #### About the static contents of the website:
 

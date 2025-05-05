@@ -33,7 +33,7 @@ export async function generateMetadata(
     }
     // TODO: OG image generation
     return {
-        title: `${event.title} | Events | ${parent.title}`,
+        title: `${event.title} | ${parent.title}`,
         description:
             event.description != null && event.description.trim().length > 0
                 ? `${event.description}: ${parent.description}`

@@ -59,7 +59,7 @@ export const getAdminApiUrl = (): string => {
     // Strip trailing slashes
     return envUrl.replace(/\/+$/, '');
   }
-  return 'http://localhost:5173';
+  return '';
 };
 
 /**

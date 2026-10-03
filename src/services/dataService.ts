@@ -54,12 +54,27 @@ const fallbackProjects: FossProject[] = [];
 
 // Single Admin API Endpoint URL configured in frontend .env
 export const getAdminApiUrl = (): string => {
+  const isLocalhost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   const envUrl = import.meta.env.VITE_ADMIN_URL;
   if (envUrl) {
-    // Strip trailing slashes
-    return envUrl.replace(/\/+$/, '');
+    const cleanUrl = envUrl.replace(/\/+$/, '');
+    // If running on a public production domain but the build had localhost, redirect to deployed admin URL
+    if (!isLocalhost && (cleanUrl.includes('localhost') || cleanUrl.includes('127.0.0.1'))) {
+      return 'https://tkmfoss-admin.vercel.app';
+    }
+    return cleanUrl;
   }
-  return '';
+
+  // When developing locally on localhost, connect to local admin dev server
+  if (isLocalhost) {
+    return 'http://localhost:5173';
+  }
+
+  // Production default: deployed admin portal
+  return 'https://tkmfoss-admin.vercel.app';
 };
 
 /**
@@ -95,7 +110,7 @@ let lastFetchTime = 0;
 const POLL_INTERVAL_MS = 20000; // 20s background sync
 
 /**
- * Unified data fetcher querying the single Admin Portal API endpoint (/api/data)
+ * Unified data fetcher querying exclusively the Admin Portal API endpoint (/api/data)
  */
 export async function refreshAllData(): Promise<void> {
   const adminUrl = getAdminApiUrl();
@@ -198,7 +213,6 @@ export async function refreshAllData(): Promise<void> {
       listeners.settings.forEach((fn) => fn(payload.settings));
     }
   } catch (err) {
-    // Quiet debug log: offline resilience keeps local cached data active
     console.debug('[TKMFOSS API Gateway] Offline or unreachable, served local cache:', err);
   }
 }

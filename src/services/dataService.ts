@@ -1,15 +1,23 @@
-import type { FosEvent, Announcement, ExecomMember, PostEventReport, ClubSettings } from '../types';
-import { FOSS_EVENTS } from '../data/events';
-import { PAST_EXECOM_2024_25 } from '../data/pastExecom';
+import type { FosEvent, Announcement, ExecomMember, PostEventReport, ClubSettings, FossProject } from '../types';
 
-// Cache keys for offline resilience
+// Cache keys for live dynamic sync
 const CACHE_KEYS = {
-  EVENTS: 'tkmfoss_fe_events_v3',
-  ANNOUNCEMENTS: 'tkmfoss_fe_announcements_v3',
-  EXECOM: 'tkmfoss_fe_execom_v3',
-  REPORTS: 'tkmfoss_fe_reports_v3',
-  SETTINGS: 'tkmfoss_fe_settings_v3'
+  EVENTS: 'tkmfoss_fe_events_v4_live',
+  ANNOUNCEMENTS: 'tkmfoss_fe_announcements_v4_live',
+  EXECOM: 'tkmfoss_fe_execom_v4_live',
+  REPORTS: 'tkmfoss_fe_reports_v4_live',
+  PROJECTS: 'tkmfoss_fe_projects_v4_live',
+  SETTINGS: 'tkmfoss_fe_settings_v4_live'
 };
+
+// Purge any stale legacy local cache keys from storage
+try {
+  ['tkmfoss_fe_events_v3', 'tkmfoss_fe_announcements_v3', 'tkmfoss_fe_execom_v3', 'tkmfoss_fe_reports_v3', 'tkmfoss_fe_settings_v3', 'tkmfoss_fe_events_v2'].forEach(k => {
+    localStorage.removeItem(k);
+  });
+} catch {
+  // ignore
+}
 
 const getCache = <T>(key: string, fallback: T): T => {
   try {
@@ -33,30 +41,41 @@ export interface ExecomGroups {
   past: ExecomMember[];
 }
 
-// Convert fallback data to match types - only 8 original OG events
-const fallbackEvents: FosEvent[] = FOSS_EVENTS.map((e) => ({
-  ...e,
-  status: e.status as 'UPCOMING' | 'COMPLETED',
-  category: e.category as any
-}));
-
-// Current is empty (user will add 2025-26 and 2026-27 manually), past has verified 2024-25
+// Clean dynamic fallbacks - strictly empty arrays; all events/data/images/projects fetched from Admin Page
+const fallbackEvents: FosEvent[] = [];
 const fallbackExecom: ExecomGroups = {
   current: [],
-  past: PAST_EXECOM_2024_25
+  past: []
 };
 
-// No dummy announcements - clean empty array
+// No dummy announcements or projects - clean empty arrays
 const fallbackAnnouncements: Announcement[] = [];
+const fallbackProjects: FossProject[] = [];
 
 // Single Admin API Endpoint URL configured in frontend .env
-const getAdminApiUrl = (): string => {
+export const getAdminApiUrl = (): string => {
   const envUrl = import.meta.env.VITE_ADMIN_URL;
   if (envUrl) {
     // Strip trailing slashes
     return envUrl.replace(/\/+$/, '');
   }
   return 'http://localhost:5173';
+};
+
+/**
+ * Universal Asset URL resolver:
+ * Ensures event posters, execom photos, and report covers are fetched
+ * directly from the Admin Portal or Cloudinary/Storage, not from static assets.
+ */
+export const resolveAssetUrl = (url?: string): string => {
+  if (!url) return '';
+  // If already absolute URL (http, https, data:, blob:), return as is
+  if (/^(https?:|\/\/|data:|blob:)/i.test(url)) {
+    return url;
+  }
+  const adminUrl = getAdminApiUrl();
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${adminUrl}${cleanPath}`;
 };
 
 // Subscriber Registries
@@ -67,6 +86,7 @@ const listeners = {
   announcements: new Set<Listener<Announcement[]>>(),
   execom: new Set<Listener<ExecomGroups>>(),
   reports: new Set<Listener<PostEventReport[]>>(),
+  projects: new Set<Listener<FossProject[]>>(),
   settings: new Set<Listener<ClubSettings | null>>()
 };
 
@@ -96,9 +116,13 @@ export async function refreshAllData(): Promise<void> {
     const payload = await res.json();
     lastFetchTime = Date.now();
 
-    // 1. Process Events
+    // 1. Process Events - map all images and details dynamically from Admin API
     if (Array.isArray(payload.events)) {
-      const sortedEvents = [...payload.events].sort(
+      const normalizedEvents: FosEvent[] = payload.events.map((ev: FosEvent) => ({
+        ...ev,
+        coverImage: resolveAssetUrl(ev.coverImage)
+      }));
+      const sortedEvents = [...normalizedEvents].sort(
         (a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
       );
       setCache(CACHE_KEYS.EVENTS, sortedEvents);
@@ -119,38 +143,56 @@ export async function refreshAllData(): Promise<void> {
       listeners.announcements.forEach((fn) => fn(activeList));
     }
 
-    // 3. Process Execom
+    // 3. Process Execom - resolve member photo URLs to Admin API
     if (payload.execom) {
       let current: ExecomMember[] = [];
       let past: ExecomMember[] = [];
 
       if (Array.isArray(payload.execom.current) && Array.isArray(payload.execom.past)) {
-        current = payload.execom.current;
-        past = payload.execom.past;
+        current = payload.execom.current.map((m: ExecomMember) => ({ ...m, photo: resolveAssetUrl(m.photo) }));
+        past = payload.execom.past.map((m: ExecomMember) => ({ ...m, photo: resolveAssetUrl(m.photo) }));
       } else if (Array.isArray(payload.execom)) {
-        current = payload.execom.filter((m: ExecomMember) => m.isCurrent);
-        past = payload.execom.filter((m: ExecomMember) => !m.isCurrent);
+        current = payload.execom
+          .filter((m: ExecomMember) => m.isCurrent)
+          .map((m: ExecomMember) => ({ ...m, photo: resolveAssetUrl(m.photo) }));
+        past = payload.execom
+          .filter((m: ExecomMember) => !m.isCurrent)
+          .map((m: ExecomMember) => ({ ...m, photo: resolveAssetUrl(m.photo) }));
       }
 
       const execomResult: ExecomGroups = {
         current,
-        past: past.length > 0 ? past : PAST_EXECOM_2024_25
+        past
       };
 
       setCache(CACHE_KEYS.EXECOM, execomResult);
       listeners.execom.forEach((fn) => fn(execomResult));
     }
 
-    // 4. Process Reports
+    // 4. Process Reports - resolve report cover images and galleries to Admin API
     if (Array.isArray(payload.reports)) {
-      const sortedReports = [...payload.reports].sort(
+      const normalizedReports: PostEventReport[] = payload.reports.map((rep: PostEventReport) => ({
+        ...rep,
+        coverImage: resolveAssetUrl(rep.coverImage),
+        gallery: Array.isArray(rep.gallery) ? rep.gallery.map(resolveAssetUrl) : []
+      }));
+      const sortedReports = [...normalizedReports].sort(
         (a, b) => new Date(b.eventDate || 0).getTime() - new Date(a.eventDate || 0).getTime()
       );
       setCache(CACHE_KEYS.REPORTS, sortedReports);
       listeners.reports.forEach((fn) => fn(sortedReports));
     }
 
-    // 5. Process Settings
+    // 5. Process Projects from Admin API
+    if (Array.isArray(payload.projects)) {
+      const sortedProjects = [...payload.projects].sort(
+        (a, b) => (b.stars || 0) - (a.stars || 0)
+      );
+      setCache(CACHE_KEYS.PROJECTS, sortedProjects);
+      listeners.projects.forEach((fn) => fn(sortedProjects));
+    }
+
+    // 6. Process Settings
     if (payload.settings) {
       setCache(CACHE_KEYS.SETTINGS, payload.settings);
       listeners.settings.forEach((fn) => fn(payload.settings));
@@ -168,11 +210,11 @@ function checkPollingState() {
     listeners.announcements.size +
     listeners.execom.size +
     listeners.reports.size +
+    listeners.projects.size +
     listeners.settings.size;
 
   if (totalListeners > 0 && !pollIntervalId) {
-    // Initial fetch if older than 5s
-    if (Date.now() - lastFetchTime > 5000) {
+    if (Date.now() - lastFetchTime > 3000) {
       refreshAllData();
     }
     pollIntervalId = setInterval(refreshAllData, POLL_INTERVAL_MS);
@@ -261,3 +303,43 @@ export function subscribeLiveSettings(callback: (settings: ClubSettings | null) 
     checkPollingState();
   };
 }
+
+/**
+ * Subscription to open-source projects from Admin API
+ */
+export function subscribeLiveProjects(callback: (projects: FossProject[]) => void): () => void {
+  const cached = getCache<FossProject[]>(CACHE_KEYS.PROJECTS, fallbackProjects);
+  callback(cached);
+
+  listeners.projects.add(callback);
+  checkPollingState();
+
+  return () => {
+    listeners.projects.delete(callback);
+    checkPollingState();
+  };
+}
+
+/**
+ * Synchronous getters returning current memory/cached data without subscription
+ */
+export function getCachedEvents(): FosEvent[] {
+  return getCache<FosEvent[]>(CACHE_KEYS.EVENTS, fallbackEvents);
+}
+
+export function getCachedExecom(): ExecomGroups {
+  return getCache<ExecomGroups>(CACHE_KEYS.EXECOM, fallbackExecom);
+}
+
+export function getCachedAnnouncements(): Announcement[] {
+  return getCache<Announcement[]>(CACHE_KEYS.ANNOUNCEMENTS, fallbackAnnouncements);
+}
+
+export function getCachedReports(): PostEventReport[] {
+  return getCache<PostEventReport[]>(CACHE_KEYS.REPORTS, []);
+}
+
+export function getCachedProjects(): FossProject[] {
+  return getCache<FossProject[]>(CACHE_KEYS.PROJECTS, fallbackProjects);
+}
+

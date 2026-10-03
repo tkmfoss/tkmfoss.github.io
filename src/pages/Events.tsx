@@ -204,15 +204,10 @@ export const Events: React.FC = () => {
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      setPosterLightbox({
-                        url: event.coverImage,
-                        title: event.title,
-                        date: event.date,
-                        category: event.category
-                      });
+                      setActiveEvent(event);
                     }}
                     className="relative aspect-square bg-[#08090b] border-b border-[#27272a] overflow-hidden flex items-center justify-center group/poster cursor-pointer"
-                    title="Click to view full size poster"
+                    title="Click to view event details"
                   >
                     <img
                       src={event.coverImage}
@@ -223,11 +218,11 @@ export const Events: React.FC = () => {
                       }}
                     />
 
-                    {/* Hover Overlay with View Full Poster Button */}
+                    {/* Hover Overlay with View Details Button */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/poster:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                       <span className="px-3 py-1.5 bg-black/90 border border-[#00ff66] text-[#00ff66] font-mono text-[11px] font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#000]">
-                        <Maximize2 size={13} />
-                        <span>VIEW FULL POSTER</span>
+                        <ArrowUpRight size={13} />
+                        <span>VIEW DETAILS</span>
                       </span>
                     </div>
 

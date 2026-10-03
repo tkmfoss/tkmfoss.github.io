@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, CornerDownLeft } from 'lucide-react';
-import { FOSS_EVENTS } from '../data/events';
+import { getCachedEvents, getCachedProjects } from '../services/dataService';
 import { FOUR_FREEDOMS } from '../data/freedoms';
-import { FOSS_PROJECTS } from '../data/projects';
 
 interface TerminalModalProps {
   isOpen: boolean;
@@ -85,20 +84,26 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({ isOpen, onClose, o
         );
         break;
 
-      case 'events':
+      case 'events': {
+        const liveEvents = getCachedEvents();
         output = (
           <div className="space-y-2 text-xs sm:text-sm">
             <div className="text-[#00ff66] font-bold">RECENT EVENTS & INITIATIVES:</div>
-            {FOSS_EVENTS.slice(0, 4).map((ev) => (
-              <div key={ev.id} className="border-l-2 border-[#3f3f46] pl-2 text-xs">
-                <span className="text-white font-bold">{ev.title}</span> ({ev.date})
-                <div className="text-neutral-400">{ev.description}</div>
-              </div>
-            ))}
+            {liveEvents.length > 0 ? (
+              liveEvents.slice(0, 4).map((ev) => (
+                <div key={ev.id} className="border-l-2 border-[#3f3f46] pl-2 text-xs">
+                  <span className="text-white font-bold">{ev.title}</span> ({ev.date})
+                  <div className="text-neutral-400">{ev.description}</div>
+                </div>
+              ))
+            ) : (
+              <div className="text-neutral-400 text-xs italic">No published events currently found.</div>
+            )}
             <div className="text-[10px] sm:text-[11px] text-[#00f0ff]">Tip: Use web navigation [03 // EVENTS] for full archive.</div>
           </div>
         );
         break;
+      }
 
       case 'freedom':
       case 'freedoms':
@@ -114,18 +119,24 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({ isOpen, onClose, o
         );
         break;
 
-      case 'projects':
+      case 'projects': {
+        const liveProjects = getCachedProjects();
         output = (
           <div className="space-y-2 text-xs sm:text-sm">
             <div className="text-[#00ff66] font-bold">OPEN SOURCE REPOSITORIES:</div>
-            {FOSS_PROJECTS.map((p) => (
-              <div key={p.id} className="text-xs">
-                <span className="text-white font-bold">{p.repoName}</span> [{p.license}] - {p.description}
-              </div>
-            ))}
+            {liveProjects.length > 0 ? (
+              liveProjects.map((p) => (
+                <div key={p.id} className="text-xs">
+                  <span className="text-white font-bold">{p.repoName}</span> [{p.license}] - {p.description}
+                </div>
+              ))
+            ) : (
+              <div className="text-neutral-400 text-xs italic">No open source projects currently published. Add via Admin.</div>
+            )}
           </div>
         );
         break;
+      }
 
       case 'execom':
         output = (

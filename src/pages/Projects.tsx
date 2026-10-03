@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { GitBranch, Star, GitFork, Code2, ArrowUpRight, Copy, Check } from 'lucide-react';
-import { FOSS_PROJECTS } from '../data/projects';
+import React, { useState, useEffect } from 'react';
+import { GitBranch, Star, GitFork, Code2, ArrowUpRight, Copy, Check, FolderGit2 } from 'lucide-react';
+import { subscribeLiveProjects, getCachedProjects } from '../services/dataService';
+import type { FossProject } from '../types';
 
 export const Projects: React.FC = () => {
+  const [projects, setProjects] = useState<FossProject[]>(getCachedProjects());
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsub = subscribeLiveProjects((liveProjects) => {
+      setProjects(liveProjects);
+    });
+    return () => unsub();
+  }, []);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -18,7 +27,7 @@ export const Projects: React.FC = () => {
         <div className="flex items-center gap-2 text-[10px] sm:text-xs text-[#00ff66]">
           <span>// OPEN SOURCE ECOSYSTEM</span>
           <span>&bull;</span>
-          <span>TKMFOSS REPOSITORIES</span>
+          <span>TKMFOSS REPOSITORIES ({projects.length})</span>
         </div>
         <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight font-sans leading-tight">
           Software & Repositories
@@ -29,15 +38,37 @@ export const Projects: React.FC = () => {
         </p>
       </div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {FOSS_PROJECTS.map((project) => {
-          const cloneCmd = `git clone ${project.url}.git`;
-          return (
-            <div
-              key={project.id}
-              className="brutal-card p-4 sm:p-6 flex flex-col justify-between space-y-4 sm:space-y-5"
-            >
+      {/* Projects Grid or Empty State */}
+      {projects.length === 0 ? (
+        <div className="border-2 border-dashed border-[#2b2c31] bg-[#101115] p-8 sm:p-12 text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="w-12 h-12 rounded-none bg-[#16171d] border border-[#2e2f38] flex items-center justify-center text-[#00ff66]">
+              <FolderGit2 size={24} />
+            </div>
+          </div>
+          <div className="text-neutral-200 font-mono text-sm font-bold">// NO PUBLIC REPOSITORIES CATALOGED YET</div>
+          <p className="text-xs text-neutral-400 font-sans max-w-md mx-auto leading-relaxed">
+            Repositories will appear here dynamically as they are verified and published through the Admin Center.
+          </p>
+          <a
+            href="https://github.com/tkmfoss"
+            target="_blank"
+            rel="noreferrer"
+            className="brutal-btn inline-flex items-center gap-2 text-xs py-2.5 px-4 mt-2 bg-[#18191e] border-[#3f3f46] text-white hover:text-black"
+          >
+            <span>EXPLORE TKMFOSS ON GITHUB</span>
+            <ArrowUpRight size={14} />
+          </a>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {projects.map((project) => {
+            const cloneCmd = `git clone ${project.url}.git`;
+            return (
+              <div
+                key={project.id}
+                className="brutal-card p-4 sm:p-6 flex flex-col justify-between space-y-4 sm:space-y-5"
+              >
               <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#232429] text-xs">
                   <span className="text-[#00ff66] font-bold flex items-center gap-1.5 truncate pr-2">
@@ -116,6 +147,7 @@ export const Projects: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Contribution Guide */}
       <div className="border-2 border-[#2b2c31] bg-[#111216] p-4 sm:p-8 lg:p-10 shadow-[4px_4px_0px_#000000] sm:shadow-[6px_6px_0px_#000000] space-y-4 sm:space-y-6">

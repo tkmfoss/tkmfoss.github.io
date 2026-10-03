@@ -14,10 +14,14 @@ import {
   MapPin,
   X
 } from 'lucide-react';
-import { FOSS_PROJECTS } from '../data/projects';
-import { subscribeLiveEvents, subscribeLiveExecom } from '../services/dataService';
+import {
+  subscribeLiveEvents,
+  subscribeLiveExecom,
+  subscribeLiveProjects,
+  getCachedProjects
+} from '../services/dataService';
 import type { ExecomGroups } from '../services/dataService';
-import type { FosEvent } from '../types';
+import type { FosEvent, FossProject } from '../types';
 import { PosterLightbox } from '../components/PosterLightbox';
 
 interface HomeProps {
@@ -39,6 +43,7 @@ export const isEventPast = (dateStr?: string, status?: string): boolean => {
 export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
   const [events, setEvents] = useState<FosEvent[]>([]);
   const [execomState, setExecomState] = useState<ExecomGroups>({ current: [], past: [] });
+  const [projects, setProjects] = useState<FossProject[]>(getCachedProjects());
   const [eventTab, setEventTab] = useState<EventStatusTab>('ALL');
   const [resourceTab, setResourceTab] = useState<ResourceTab>('PROJECTS');
   const [posterPreview, setPosterPreview] = useState<{ url: string; title: string; date?: string; category?: string } | null>(null);
@@ -51,10 +56,14 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
     const unsubExecom = subscribeLiveExecom((data) => {
       setExecomState(data);
     });
+    const unsubProjects = subscribeLiveProjects((liveProjects) => {
+      setProjects(liveProjects);
+    });
 
     return () => {
       unsubEvents();
       unsubExecom();
+      unsubProjects();
     };
   }, []);
 
@@ -408,16 +417,9 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
                 >
                   {/* Poster Graphic - Full Size Uncropped (1:1 Square) */}
                   <div
-                    onClick={() =>
-                      setPosterPreview({
-                        url: event.coverImage,
-                        title: event.title,
-                        date: event.date,
-                        category: event.category
-                      })
-                    }
+                    onClick={() => setSelectedEvent(event)}
                     className="relative aspect-square bg-[#08090b] border-b border-[#27272a] overflow-hidden flex items-center justify-center cursor-pointer group/poster"
-                    title="Click to view full size poster"
+                    title="Click to view event details"
                   >
                     <img
                       src={event.coverImage}
@@ -428,11 +430,11 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
                       }}
                     />
 
-                    {/* Hover Overlay with View Full Poster Button */}
+                    {/* Hover Overlay with View Details Button */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/poster:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                       <span className="px-3 py-1.5 bg-black/90 border border-[#00ff66] text-[#00ff66] font-mono text-[11px] font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#000]">
-                        <Maximize2 size={13} />
-                        <span>VIEW FULL POSTER</span>
+                        <ArrowUpRight size={13} />
+                        <span>VIEW EVENT DETAILS</span>
                       </span>
                     </div>
 
@@ -566,7 +568,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
                 }`}
             >
               <Code2 size={13} />
-              <span>PROJECTS ({FOSS_PROJECTS.length})</span>
+              <span>PROJECTS ({projects.length})</span>
             </button>
 
             <button
@@ -584,49 +586,60 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
 
         {/* Tab 1: Open Source Projects */}
         {resourceTab === 'PROJECTS' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            {FOSS_PROJECTS.map((project) => (
-              <div
-                key={project.id}
-                className="brutal-card p-5 flex flex-col justify-between space-y-4"
-              >
-                <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-[#232429] font-mono text-xs">
-                    <span className="text-[#00ff66] font-bold flex items-center gap-1.5 truncate pr-2">
-                      <GitBranch size={14} className="shrink-0" />
-                      <span className="truncate">{project.repoName}</span>
-                    </span>
-                    <span className="px-1.5 py-0.5 bg-[#17181c] border border-[#27272a] text-[10px] text-neutral-300 shrink-0">
-                      {project.license}
-                    </span>
+          projects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="brutal-card p-5 flex flex-col justify-between space-y-4"
+                >
+                  <div>
+                    <div className="flex items-center justify-between pb-3 border-b border-[#232429] font-mono text-xs">
+                      <span className="text-[#00ff66] font-bold flex items-center gap-1.5 truncate pr-2">
+                        <GitBranch size={14} className="shrink-0" />
+                        <span className="truncate">{project.repoName}</span>
+                      </span>
+                      <span className="px-1.5 py-0.5 bg-[#17181c] border border-[#27272a] text-[10px] text-neutral-300 shrink-0">
+                        {project.license}
+                      </span>
+                    </div>
+
+                    <div className="mt-3">
+                      <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                        {project.description}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="mt-3">
-                    <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                      {project.description}
-                    </p>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[#232429] font-mono text-xs text-neutral-400">
+                    <div className="flex items-center gap-3">
+                      <span className="text-white font-bold">{project.language}</span>
+                      <span>&bull;</span>
+                      <span>{project.stars ?? 0} Stars</span>
+                    </div>
+                    {project.url && (
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#00f0ff] hover:underline flex items-center gap-1 text-xs"
+                      >
+                        <span>SOURCE</span>
+                        <ArrowUpRight size={12} />
+                      </a>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[#232429] font-mono text-xs text-neutral-400">
-                  <div className="flex items-center gap-3">
-                    <span className="text-white font-bold">{project.language}</span>
-                    <span>&bull;</span>
-                    <span>{project.stars} Stars</span>
-                  </div>
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#00f0ff] hover:underline flex items-center gap-1 text-xs"
-                  >
-                    <span>SOURCE</span>
-                    <ArrowUpRight size={12} />
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 border border-dashed border-[#2b2c31] bg-[#14151a]/40 text-center font-mono space-y-2">
+              <div className="text-[#00ff66] text-xs font-bold">// NO PROJECTS CATALOGED YET</div>
+              <p className="text-neutral-400 text-xs max-w-md mx-auto">
+                Open source repositories and student projects will appear here once added through the Admin Portal.
+              </p>
+            </div>
+          )
         )}
 
         {/* Tab 2: Curated Resources & Guides */}

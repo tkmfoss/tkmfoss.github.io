@@ -79,3 +79,22 @@ export interface ClubSettings {
   cloudinaryCloudName?: string;
   cloudinaryUploadPreset?: string;
 }
+
+export type ProjectStatus = 'ACTIVE' | 'MAINTAINED' | 'INCUBATING' | 'ARCHIVED';
+
+export interface FossProject {
+  id: string;
+  name: string;
+  repoName: string;
+  description: string;
+  language: string;
+  license: string;
+  stars: number;
+  forks: number;
+  url: string;
+  status: ProjectStatus;
+  tags: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+

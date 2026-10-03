@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, Users, CheckCircle2, Lock, History, ChevronDown, Mail } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '../components/Icons';
-import { PAST_EXECOM_2024_25 } from '../data/pastExecom';
-import { subscribeLiveExecom } from '../services/dataService';
+import { subscribeLiveExecom, getCachedExecom } from '../services/dataService';
 import type { ExecomGroups } from '../services/dataService';
 
 export const Execom: React.FC = () => {
   const [showArchive, setShowArchive] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-  const [execomData, setExecomData] = useState<ExecomGroups>({
-    current: [],
-    past: PAST_EXECOM_2024_25
-  });
+  const [execomData, setExecomData] = useState<ExecomGroups>(getCachedExecom());
 
   useEffect(() => {
     const unsub = subscribeLiveExecom((data) => {

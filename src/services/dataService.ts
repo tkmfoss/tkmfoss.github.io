@@ -52,29 +52,13 @@ const fallbackExecom: ExecomGroups = {
 const fallbackAnnouncements: Announcement[] = [];
 const fallbackProjects: FossProject[] = [];
 
-// Single Admin API Endpoint URL configured in frontend .env
+// Admin Portal API Endpoint URL configured strictly via .env (VITE_ADMIN_URL)
 export const getAdminApiUrl = (): string => {
-  const isLocalhost =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
   const envUrl = import.meta.env.VITE_ADMIN_URL;
   if (envUrl) {
-    const cleanUrl = envUrl.replace(/\/+$/, '');
-    // If running on a public production domain but the build had localhost, redirect to deployed admin URL
-    if (!isLocalhost && (cleanUrl.includes('localhost') || cleanUrl.includes('127.0.0.1'))) {
-      return 'https://tkmfoss-admin.vercel.app';
-    }
-    return cleanUrl;
+    return envUrl.trim().replace(/\/+$/, '');
   }
-
-  // When developing locally on localhost, connect to local admin dev server
-  if (isLocalhost) {
-    return 'http://localhost:5173';
-  }
-
-  // Production default: deployed admin portal
-  return 'https://tkmfoss-admin.vercel.app';
+  return '';
 };
 
 /**
@@ -89,6 +73,7 @@ export const resolveAssetUrl = (url?: string): string => {
     return url;
   }
   const adminUrl = getAdminApiUrl();
+  if (!adminUrl) return url;
   const cleanPath = url.startsWith('/') ? url : `/${url}`;
   return `${adminUrl}${cleanPath}`;
 };
@@ -114,6 +99,9 @@ const POLL_INTERVAL_MS = 20000; // 20s background sync
  */
 export async function refreshAllData(): Promise<void> {
   const adminUrl = getAdminApiUrl();
+  if (!adminUrl) {
+    return;
+  }
   const endpoint = `${adminUrl}/api/data`;
 
   try {

@@ -40,6 +40,8 @@ jobs:
 
       - name: Build with Vite
         run: npm run build
+        env:
+          VITE_ADMIN_URL: ${{ secrets.VITE_ADMIN_URL || vars.VITE_ADMIN_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

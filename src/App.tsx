@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { TerminalModal } from './components/TerminalModal';
+import { AnnouncementBanner } from './components/AnnouncementBanner';
 import { Home } from './pages/Home';
 import { Events } from './pages/Events';
 import { Execom } from './pages/Execom';
@@ -9,15 +10,26 @@ import { Manifesto } from './pages/Manifesto';
 import { Projects } from './pages/Projects';
 import { Community } from './pages/Community';
 import { Terminal } from 'lucide-react';
+import { subscribeLiveAnnouncements } from './services/dataService';
+import type { Announcement } from './types';
 
 export function App() {
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [terminalOpen, setTerminalOpen] = useState<boolean>(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   // Scroll to top when tab changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentTab]);
+
+  // Subscribe to live announcements from admin Firestore
+  useEffect(() => {
+    const unsub = subscribeLiveAnnouncements((items) => {
+      setAnnouncements(items);
+    });
+    return () => unsub();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#090a0d] text-[#e4e4e7] selection:bg-[#00ff66] selection:text-black overflow-x-hidden">
@@ -26,6 +38,7 @@ export function App() {
 
       {/* Main Container */}
       <div className="relative z-10 flex flex-col min-h-screen">
+        <AnnouncementBanner announcements={announcements} />
         <Navbar
           currentTab={currentTab}
           onSelectTab={setCurrentTab}

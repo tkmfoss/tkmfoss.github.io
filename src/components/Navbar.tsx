@@ -1,16 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Terminal, Menu, X, ArrowUpRight, Shield, Code2, Users, Calendar, Layers } from 'lucide-react';
+import { Terminal, ArrowUpRight, Shield, Code2, Users, Calendar, Layers } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: string;
   onSelectTab: (tab: string) => void;
-  onOpenTerminal: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onOpenTerminal }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Close mobile menu on Esc key or when resizing to desktop
+  // Close mobile menu when pressing Escape
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu when resizing to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -21,17 +32,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onOpenT
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Prevent background scroll when mobile menu is open
+  // Prevent background scroll (and layout shift) when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
     } else {
       document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     };
   }, [mobileMenuOpen]);
+
+  const toggleMenu = () => setMobileMenuOpen((open) => !open);
+
+  const handleNavigate = (tab: string) => {
+    onSelectTab(tab);
+    setMobileMenuOpen(false);
+  };
 
   const navItems = [
     { id: 'home', label: '01 // HOME', icon: Terminal },
@@ -44,8 +68,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onOpenT
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[#0c0d0f]/95 backdrop-blur-md border-b-2 border-[#27272a]">
-        {/* Top Ticker Status Bar - Hidden on very small screens, responsive text */}
+      <header className="fixed lg:sticky top-0 left-0 right-0 z-40 w-full bg-[#0c0d0f]/95 backdrop-blur-md border-b-2 border-[#27272a]">
+        {/* Top Ticker Status Bar */}
         <div className="w-full bg-[#121316] border-b border-[#222326] px-3 sm:px-4 py-1 flex items-center justify-between text-[10px] sm:text-[11px] font-mono tracking-wider text-neutral-400">
           <div className="flex items-center gap-2 sm:gap-3 truncate">
             <span className="flex items-center gap-1.5 text-[#00ff66] shrink-0 font-bold">
@@ -58,33 +82,21 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onOpenT
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <span className="hidden md:inline-block text-neutral-400">GNU/LINUX &bull; FREEDOM 0-3</span>
-            <button
-              onClick={onOpenTerminal}
-              className="hover:text-[#00ff66] flex items-center gap-1 transition-colors cursor-pointer text-[10px] sm:text-[11px]"
-              title="Open Terminal (Ctrl+K)"
-            >
-              <Terminal size={11} className="text-[#00ff66]" />
-              <span className="hidden sm:inline">TERMINAL</span>
-              <span className="text-[#00ff66] font-bold">[CLI]</span>
-            </button>
           </div>
         </div>
 
         {/* Main Navbar Bar */}
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
           {/* Brand Logo & Name */}
-          <button 
-            onClick={() => {
-              onSelectTab('home');
-              setMobileMenuOpen(false);
-            }}
+          <button
+            onClick={() => handleNavigate('home')}
             className="flex items-center gap-2 sm:gap-3 text-left cursor-pointer group min-w-0 shrink"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#17181c] border-2 border-[#3f3f46] flex items-center justify-center shrink-0 transition-all group-hover:border-[#00ff66] group-hover:shadow-[2px_2px_0px_#00ff66]">
-              <img 
-                src="/images/fosscell-logo.png" 
-                alt="FOSS Cell Logo" 
-                className="w-5 h-5 sm:w-7 sm:h-7 object-contain" 
+              <img
+                src="/images/fosscell-logo.png"
+                alt="FOSS Cell Logo"
+                className="w-5 h-5 sm:w-7 sm:h-7 object-contain"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
@@ -131,18 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onOpenT
           {/* Action Button & Mobile Menu Toggle */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
-              onClick={onOpenTerminal}
-              className="hidden md:flex brutal-btn text-xs py-1.5 px-3 bg-[#18191d] border-[#3f3f46] text-[#00ff66]"
-            >
-              <Terminal size={14} />
-              <span>$ CLI</span>
-            </button>
-
-            <button
-              onClick={() => {
-                onSelectTab('community');
-                setMobileMenuOpen(false);
-              }}
+              onClick={() => handleNavigate('community')}
               className="brutal-btn-primary text-[11px] sm:text-xs py-1.5 px-2.5 sm:py-2 sm:px-3 font-mono font-bold flex items-center gap-1"
             >
               <span>JOIN</span>
@@ -152,87 +153,108 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onOpenT
 
             {/* Mobile hamburger button */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 sm:p-2 bg-[#18191d] border border-[#3f3f46] text-white hover:border-[#00ff66] transition-colors cursor-pointer"
+              onClick={toggleMenu}
+              className="lg:hidden relative h-10 w-10 flex items-center justify-center bg-[#18191d] border border-[#3f3f46] text-white hover:border-[#00ff66] transition-colors cursor-pointer shrink-0"
               aria-label="Toggle Navigation Menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-menu"
             >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              <span className="relative block w-5 h-4" aria-hidden="true">
+                <span
+                  className="absolute left-0 w-full h-0.5 bg-current rounded motion-reduce:transition-none"
+                  style={{
+                    top: mobileMenuOpen ? '7px' : '0px',
+                    transform: mobileMenuOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                    transition: 'top 300ms ease-in-out, transform 300ms ease-in-out',
+                  }}
+                />
+                <span
+                  className="absolute left-0 top-[7px] w-full h-0.5 bg-current rounded motion-reduce:transition-none"
+                  style={{
+                    opacity: mobileMenuOpen ? 0 : 1,
+                    transition: 'opacity 300ms ease-in-out',
+                  }}
+                />
+                <span
+                  className="absolute left-0 w-full h-0.5 bg-current rounded motion-reduce:transition-none"
+                  style={{
+                    top: mobileMenuOpen ? '7px' : '14px',
+                    transform: mobileMenuOpen ? 'rotate(-45deg)' : 'rotate(0deg)',
+                    transition: 'top 300ms ease-in-out, transform 300ms ease-in-out',
+                  }}
+                />
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Backdrop & Drawer */}
-        {mobileMenuOpen && (
-          <div 
-            className="lg:hidden fixed inset-x-0 top-[85px] bottom-0 bg-black/70 backdrop-blur-sm z-50 flex flex-col"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <div 
-              className="bg-[#0e0f12] border-b-2 border-[#27272a] p-4 space-y-2.5 font-mono text-sm max-h-[calc(100vh-90px)] overflow-y-auto shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="text-[11px] text-neutral-500 pb-1 border-b border-[#1f2024] flex items-center justify-between">
-                <span>// NAVIGATION DIRECTORY</span>
-                <span>[TAP TO NAVIGATE]</span>
-              </div>
+        {/* Mobile Navigation Dropdown */}
+        <div
+          id="mobile-nav-menu"
+          inert={!mobileMenuOpen}
+          aria-hidden={!mobileMenuOpen}
+          className={`lg:hidden absolute left-0 right-0 top-full z-50 origin-top border-b-2 border-[#27272a] bg-[#0e0f12]/98 backdrop-blur-md shadow-2xl motion-reduce:transition-none motion-reduce:transform-none ${
+            mobileMenuOpen
+              ? 'opacity-100 translate-y-0 pointer-events-auto'
+              : 'opacity-0 -translate-y-2 pointer-events-none'
+          } transform-gpu transition-all duration-250 ease-in-out`}
+        >
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5 space-y-2.5 font-mono text-sm">
+            <div className="text-[11px] text-neutral-500 pb-1 border-b border-[#1f2024] flex items-center justify-between">
+              <span>// NAVIGATION DIRECTORY</span>
+              <span>[TAP TO NAVIGATE]</span>
+            </div>
 
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      onSelectTab(item.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left p-3 flex items-center justify-between border cursor-pointer transition-all ${
-                      isActive
-                        ? 'bg-[#00ff66] text-black font-bold border-[#00ff66] shadow-[2px_2px_0px_#ffffff]'
-                        : 'bg-[#15161a] text-neutral-200 border-[#27272a] hover:border-neutral-400'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon size={16} />
-                      <span className="text-xs sm:text-sm">{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className={`text-[10px] px-1.5 py-0.5 font-bold ${
-                        isActive ? 'bg-black text-[#00ff66]' : 'bg-black text-[#f59e0b] border border-[#f59e0b]'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-
-              <div className="pt-3 border-t border-[#27272a] grid grid-cols-2 gap-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentTab === item.id;
+              return (
                 <button
-                  onClick={() => {
-                    onOpenTerminal();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="brutal-btn text-xs py-2.5 bg-[#18191d] border-[#3f3f46] text-[#00ff66] flex items-center justify-center gap-1.5"
+                  key={item.id}
+                  onClick={() => handleNavigate(item.id)}
+                  tabIndex={mobileMenuOpen ? 0 : -1}
+                  className={`w-full text-left p-3 sm:p-3.5 flex items-center justify-between border cursor-pointer transition-all min-h-[44px] ${
+                    isActive
+                      ? 'bg-[#00ff66] text-black font-bold border-[#00ff66] shadow-[2px_2px_0px_#ffffff]'
+                      : 'bg-[#15161a] text-neutral-200 border-[#27272a] hover:border-neutral-400'
+                  }`}
                 >
-                  <Terminal size={14} />
-                  <span>$ CLI</span>
+                  <div className="flex items-center gap-3">
+                    <Icon size={16} />
+                    <span className="text-xs sm:text-sm">{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className={`text-[10px] px-1.5 py-0.5 font-bold ${
+                      isActive ? 'bg-black text-[#00ff66]' : 'bg-black text-[#f59e0b] border border-[#f59e0b]'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
+              );
+            })}
 
-                <button
-                  onClick={() => {
-                    onSelectTab('community');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="brutal-btn-primary text-xs py-2.5 flex items-center justify-center gap-1.5"
-                >
-                  <span>JOIN CHANNELS</span>
-                </button>
-              </div>
+            <div className="pt-3 border-t border-[#27272a]">
+              <button
+                onClick={() => handleNavigate('community')}
+                tabIndex={mobileMenuOpen ? 0 : -1}
+                className="brutal-btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-1.5"
+              >
+                <span>JOIN CHANNELS</span>
+              </button>
             </div>
           </div>
-        )}
+        </div>
       </header>
+
+      {/* Background overlay / blur for mobile menu */}
+      <div
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden="true"
+        className={`lg:hidden fixed inset-0 z-[35] backdrop-blur-sm bg-black/50 motion-reduce:transition-none transition-all duration-250 ease-in-out ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
     </>
   );
 };

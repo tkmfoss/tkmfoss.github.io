@@ -26,7 +26,6 @@ import { PosterLightbox } from '../components/PosterLightbox';
 
 interface HomeProps {
   onSelectTab: (tab: string) => void;
-  onOpenTerminal: () => void;
 }
 
 type EventStatusTab = 'ALL' | 'UPCOMING' | 'ONGOING' | 'COMPLETED';
@@ -40,7 +39,7 @@ export const isEventPast = (dateStr?: string, status?: string): boolean => {
   return dateStr < todayStr;
 };
 
-export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
+export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
   const [events, setEvents] = useState<FosEvent[]>([]);
   const [execomState, setExecomState] = useState<ExecomGroups>({ current: [], past: [] });
   const [projects, setProjects] = useState<FossProject[]>(getCachedProjects());
@@ -192,15 +191,6 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
                   <Calendar size={16} />
                   <span>EXPLORE EVENTS</span>
                 </button>
-
-                <button
-                  onClick={onOpenTerminal}
-                  className="brutal-btn px-4 py-3 bg-[#131418] border-[#383a45] text-[#00ff66] flex items-center justify-center gap-1.5"
-                  title="Open Interactive Terminal (Ctrl+K)"
-                >
-                  <Terminal size={15} />
-                  <span>$ CLI</span>
-                </button>
               </div>
             </div>
 
@@ -236,15 +226,6 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab, onOpenTerminal }) => {
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <button
-                    onClick={onOpenTerminal}
-                    className="w-full py-2 bg-[#17181d] border border-[#34353d] hover:border-[#00ff66] hover:text-[#00ff66] text-neutral-300 text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 text-xs"
-                  >
-                    <span>LAUNCH INTERACTIVE TERMINAL</span>
-                    <ArrowUpRight size={13} />
-                  </button>
-                </div>
               </div>
             </div>
           </div>

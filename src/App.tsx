@@ -32,7 +32,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090a0d] text-[#e4e4e7] selection:bg-[#00ff66] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-[#090a0d] text-[#e4e4e7] selection:bg-[#00ff66] selection:text-black overflow-x-clip">
       {/* Background Subtle Grid Texture */}
       <div className="fixed inset-0 pointer-events-none bg-circuit-lines opacity-25 z-0"></div>
 
@@ -42,15 +42,17 @@ export function App() {
         <Navbar
           currentTab={currentTab}
           onSelectTab={setCurrentTab}
-          onOpenTerminal={() => setTerminalOpen(true)}
         />
 
-        <main className="flex-1 pb-16">
+        {announcements.length === 0 && (
+           <div className="h-20 lg:hidden shrink-0" aria-hidden="true" />
+         )}
+
+         <main className="flex-1 pb-16">
           {currentTab === 'home' && (
             <Home
               onSelectTab={setCurrentTab}
-              onOpenTerminal={() => setTerminalOpen(true)}
-            />
+                />
           )}
 
           {currentTab === 'manifesto' && <Manifesto />}
@@ -66,7 +68,6 @@ export function App() {
 
         <Footer
           onSelectTab={setCurrentTab}
-          onOpenTerminal={() => setTerminalOpen(true)}
         />
 
         {/* Global Terminal CLI Modal */}
@@ -82,7 +83,7 @@ export function App() {
         {/* Persistent Floating CLI Button for quick access */}
         <button
           onClick={() => setTerminalOpen(true)}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 brutal-btn p-2 sm:py-2.5 sm:px-4 bg-[#121316] border-2 border-[#3f3f46] text-[#00ff66] shadow-[3px_3px_0px_#000000] sm:shadow-[4px_4px_0px_#000000] hover:border-[#00ff66] flex items-center gap-2 font-mono text-xs cursor-pointer"
+          className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))] sm:right-6 z-30 brutal-btn p-2 sm:py-2.5 sm:px-4 bg-[#121316] border-2 border-[#3f3f46] text-[#00ff66] shadow-[3px_3px_0px_#000000] sm:shadow-[4px_4px_0px_#000000] hover:border-[#00ff66] flex items-center gap-2 font-mono text-xs cursor-pointer"
           title="Open Terminal (Ctrl+K)"
         >
           <Terminal size={14} />

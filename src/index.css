@@ -4,6 +4,8 @@
   --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: 'Space Grotesk', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+  /* Extra small breakpoint used by compact UI labels */
+  --breakpoint-xs: 30rem;
 }
 
 @layer base {
@@ -19,7 +21,7 @@
     color: #e4e4e7;
     line-height: 1.6;
     letter-spacing: -0.01em;
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -31,6 +33,34 @@
 
   code, pre, .font-mono {
     font-family: var(--font-mono);
+  }
+
+  /* Responsive guardrails: allow media/flex children to shrink and wrap content. */
+  html, body, #root {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  img, picture, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  input, textarea, select, button {
+    max-width: 100%;
+  }
+
+  .flex > *, .grid > * {
+    min-width: 0;
+  }
+
+  pre, code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  body {
+    overflow-wrap: break-word;
   }
 }
 

@@ -60,6 +60,8 @@ export const Community: React.FC = () => {
     }
   ];
 
+  const [openFaqs, setOpenFaqs] = useState<boolean[]>(() => faqs.map(() => false));
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (form.name && form.email) {
@@ -86,7 +88,7 @@ export const Community: React.FC = () => {
       </div>
 
       {/* Primary Community Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
         {channels.map((chan, idx) => {
           const Icon = chan.icon;
           return (
@@ -95,26 +97,26 @@ export const Community: React.FC = () => {
               href={chan.link}
               target="_blank"
               rel="noreferrer"
-              className="brutal-card p-4 sm:p-6 flex flex-col justify-between space-y-4 group cursor-pointer"
+              className="brutal-card p-3 sm:p-6 flex flex-col justify-between space-y-3 sm:space-y-4 group cursor-pointer"
             >
               <div>
-                <div className="flex items-center justify-between pb-3 border-b border-[#232429] text-xs">
-                  <span className="flex items-center gap-2 text-white font-bold">
-                    <Icon size={16} style={{ color: chan.color }} />
-                    <span className="text-xs sm:text-sm">{chan.name}</span>
+                <div className="flex items-center justify-between pb-2 sm:pb-3 border-b border-[#232429] text-xs">
+                  <span className="flex items-center gap-2 text-white font-bold min-w-0">
+                    <Icon size={16} style={{ color: chan.color }} className="shrink-0" />
+                    <span className="text-xs sm:text-sm truncate">{chan.name}</span>
                   </span>
-                  <span className="px-1.5 sm:px-2 py-0.5 bg-[#17181c] border border-[#27272a] text-[9px] sm:text-[10px]" style={{ color: chan.color }}>
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-[#17181c] border border-[#27272a] text-[9px] sm:text-[10px] shrink-0 ml-2" style={{ color: chan.color }}>
                     [{chan.badge}]
                   </span>
                 </div>
 
-                <p className="mt-3 text-xs sm:text-sm text-neutral-300 font-sans leading-relaxed">
+                <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-neutral-300 font-sans leading-relaxed line-clamp-2">
                   {chan.desc}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-[#232429] text-xs text-neutral-400">
-                <span className="text-[10px] sm:text-[11px] truncate max-w-[180px] sm:max-w-[240px]">{chan.link}</span>
+              <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-[#232429] text-xs text-neutral-400 gap-2">
+                <span className="text-[10px] sm:text-[11px] truncate min-w-0">{chan.link}</span>
                 <span className="text-[#00ff66] font-bold group-hover:underline flex items-center gap-1 shrink-0 text-xs">
                   <span>ENTER</span>
                   <ArrowUpRight size={12} />
@@ -247,18 +249,53 @@ export const Community: React.FC = () => {
           <span className="text-[10px] sm:text-xs text-neutral-400">// FAQ_DATABASE</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="brutal-card p-4 sm:p-6 space-y-2">
-              <div className="text-white font-bold text-xs sm:text-sm font-sans flex items-start gap-2">
-                <span className="text-[#00ff66] font-mono text-xs mt-0.5">[{idx + 1}]</span>
-                <span>{faq.q}</span>
+        <div className="flex flex-col gap-2 sm:gap-3">
+          {faqs.map((faq, idx) => {
+            const isOpen = openFaqs[idx];
+            return (
+              <div key={idx} className="border-2 border-[#2b2c31] bg-[#101115] overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFaqs((prev) => {
+                      const next = [...prev];
+                      next[idx] = !next[idx];
+                      return next;
+                    })
+                  }
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${idx}`}
+                  id={`faq-question-${idx}`}
+                  className="w-full flex items-start justify-between gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-left min-h-[40px] cursor-pointer hover:bg-[#16171d] transition-colors"
+                >
+                  <span className="flex items-start gap-2 min-w-0">
+                    <span className="text-[#00ff66] font-mono text-xs mt-0.5 shrink-0">[{idx + 1}]</span>
+                    <span className="text-white font-bold text-xs sm:text-sm font-sans">{faq.q}</span>
+                  </span>
+                  <span
+                    className="text-[#00ff66] text-sm font-bold shrink-0 leading-none mt-0.5 transition-transform duration-250 ease-in-out motion-reduce:transition-none"
+                    aria-hidden="true"
+                  >
+                    {isOpen ? '−' : '+'}
+                  </span>
+                </button>
+                <div
+                  id={`faq-answer-${idx}`}
+                  role="region"
+                  aria-labelledby={`faq-question-${idx}`}
+                  className={`grid transition-all duration-250 ease-in-out motion-reduce:transition-none ${
+                    isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="text-xs text-neutral-300 font-sans leading-relaxed px-3 sm:px-4 pb-2.5 sm:pb-3 pt-1 pl-8 sm:pl-9">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-neutral-300 font-sans leading-relaxed pl-6">
-                {faq.a}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

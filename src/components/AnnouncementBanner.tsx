@@ -47,7 +47,7 @@ export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ announce
   };
 
   return (
-    <div className="w-full bg-[#0d0e12] border-b-2 border-[#2b2c31] px-3 sm:px-6 py-2.5 font-mono text-xs z-40 transition-all">
+    <div className="w-full mt-20 lg:mt-0 bg-[#0d0e12] border-b-2 border-[#2b2c31] px-3 sm:px-6 py-2.5 font-mono text-xs z-40 transition-all">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5 overflow-hidden flex-1">
           <div className="flex items-center gap-1.5 shrink-0">

@@ -9,7 +9,33 @@ export const isEventPast = (dateStr?: string, status?: string): boolean => {
   if (status === 'COMPLETED') return true;
   if (!dateStr) return false;
   const todayStr = new Date().toISOString().split('T')[0];
-  return dateStr < todayStr;
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    return dateStr < todayStr;
+  }
+  const parsed = new Date(dateStr);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.getTime() < new Date(todayStr).getTime();
+  }
+  return false;
+};
+
+// Formats ISO YYYY-MM-DD or raw strings into readable presentation date
+export const formatEventDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    try {
+      const [year, month, day] = dateStr.split('-');
+      const dateObj = new Date(Number(year), Number(month) - 1, Number(day));
+      return dateObj.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+  return dateStr;
 };
 
 export const Events: React.FC = () => {
@@ -68,6 +94,15 @@ export const Events: React.FC = () => {
       return matchesYear && matchesCategory && matchesSearch;
     });
   }, [events, selectedYear, selectedCategory, searchQuery]);
+
+  // Separate upcoming events from past events
+  const upcomingEvents = useMemo(() => {
+    return filteredEvents.filter((ev) => !isEventPast(ev.date, ev.status));
+  }, [filteredEvents]);
+
+  const pastEvents = useMemo(() => {
+    return filteredEvents.filter((ev) => isEventPast(ev.date, ev.status));
+  }, [filteredEvents]);
 
   // Find report corresponding to active event
   const eventReport = useMemo(() => {
@@ -189,133 +224,193 @@ export const Events: React.FC = () => {
             </div>
           </div>
 
-          {/* Events Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filteredEvents.map((event) => {
-              const isPast = isEventPast(event.date, event.status);
-
-              return (
+          {/* Helper function to render a brutalist event card */}
+          {(() => {
+            const renderEventCard = (event: FosEvent, isPast: boolean) => (
+              <div
+                key={event.id}
+                onClick={() => setActiveEvent(event)}
+                className="brutal-card flex flex-col justify-between overflow-hidden cursor-pointer group hover:border-[#00ff66] transition-all hover:-translate-y-0.5"
+              >
+                {/* Poster / Header - Full Size Uncropped (1:1 Square) */}
                 <div
-                  key={event.id}
-                  onClick={() => setActiveEvent(event)}
-                  className="brutal-card flex flex-col justify-between overflow-hidden cursor-pointer group"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveEvent(event);
+                  }}
+                  className="relative aspect-square bg-[#08090b] border-b border-[#27272a] overflow-hidden flex items-center justify-center group/poster cursor-pointer"
+                  title="Click to view event details"
                 >
-                  {/* Poster / Header - Full Size Uncropped (1:1 Square) */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveEvent(event);
+                  <img
+                    src={event.coverImage}
+                    alt={event.title}
+                    className="w-full h-full object-contain contrast-105 transition-all duration-300 group-hover:scale-102"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
                     }}
-                    className="relative aspect-square bg-[#08090b] border-b border-[#27272a] overflow-hidden flex items-center justify-center group/poster cursor-pointer"
-                    title="Click to view event details"
-                  >
-                    <img
-                      src={event.coverImage}
-                      alt={event.title}
-                      className="w-full h-full object-contain contrast-105 transition-all duration-300"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
+                  />
 
-                    {/* Hover Overlay with View Details Button */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/poster:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <span className="px-3 py-1.5 bg-black/90 border border-[#00ff66] text-[#00ff66] font-mono text-[11px] font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#000]">
-                        <ArrowUpRight size={13} />
-                        <span>VIEW DETAILS</span>
-                      </span>
-                    </div>
-
-                    <div className="absolute top-2 left-2 flex items-center gap-1.5 pointer-events-none">
-                      <span className="px-2 py-0.5 bg-black/90 border border-white/20 text-[10px] text-[#00ff66] font-bold">
-                        [{event.category}]
-                      </span>
-                      {!isPast && event.registrationOpen && (
-                        <span className="px-1.5 py-0.5 bg-[#00ff66] text-black font-mono font-bold text-[9px] animate-pulse">
-                          REGISTRATION OPEN
-                        </span>
-                      )}
-                    </div>
-                    <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/90 border border-white/20 text-[10px] text-white pointer-events-none">
-                      {event.year}
-                    </div>
+                  {/* Hover Overlay with View Details Button */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/poster:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    <span className="px-3 py-1.5 bg-black/90 border border-[#00ff66] text-[#00ff66] font-mono text-[11px] font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#000]">
+                      <ArrowUpRight size={13} />
+                      <span>VIEW DETAILS</span>
+                    </span>
                   </div>
 
-                  {/* Body */}
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs text-neutral-400">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar size={12} className="text-[#00f0ff]" />
-                          <span>{event.date}</span>
-                        </div>
-                        {event.time && (
-                          <div className="flex items-center gap-1 text-[11px]">
-                            <Clock size={11} className="text-neutral-500" />
-                            <span>{event.time}</span>
-                          </div>
-                        )}
+                  <div className="absolute top-2 left-2 flex items-center gap-1.5 pointer-events-none">
+                    <span className="px-2 py-0.5 bg-black/90 border border-white/20 text-[10px] text-[#00ff66] font-bold">
+                      [{event.category}]
+                    </span>
+                    {!isPast && event.registrationOpen && (
+                      <span className="px-1.5 py-0.5 bg-[#00ff66] text-black font-mono font-bold text-[9px] animate-pulse">
+                        REGISTRATION OPEN
+                      </span>
+                    )}
+                  </div>
+                  <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/90 border border-white/20 text-[10px] text-white pointer-events-none font-mono">
+                    {event.year}
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-neutral-400">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar size={12} className={isPast ? "text-neutral-400" : "text-[#00f0ff]"} />
+                        <span className={isPast ? "text-neutral-300 font-mono" : "text-white font-mono font-bold"}>
+                          {formatEventDate(event.date)}
+                        </span>
                       </div>
-                      <h3 className="text-base sm:text-lg font-bold text-white font-sans group-hover:text-[#00ff66] transition-colors leading-snug">
-                        {event.title}
-                      </h3>
-                      <p className="text-xs text-neutral-300 line-clamp-3 font-sans leading-relaxed">
-                        {event.description}
-                      </p>
+                      {event.time && (
+                        <div className="flex items-center gap-1 text-[11px] font-mono">
+                          <Clock size={11} className="text-neutral-500" />
+                          <span>{event.time}</span>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-white font-sans group-hover:text-[#00ff66] transition-colors leading-snug">
+                      {event.title}
+                    </h3>
+                    <p className="text-xs text-neutral-300 line-clamp-3 font-sans leading-relaxed">
+                      {event.description}
+                    </p>
+                  </div>
+
+                  {/* Highlights tags */}
+                  <div className="space-y-3 pt-3 border-t border-[#232429]">
+                    <div className="flex flex-wrap gap-1">
+                      {event.highlights &&
+                        event.highlights.slice(0, 2).map((h, i) => (
+                          <span key={i} className="text-[10px] px-1.5 py-0.5 bg-[#17181d] border border-[#27272a] text-neutral-300">
+                            #{h}
+                          </span>
+                        ))}
                     </div>
 
-                    {/* Highlights tags */}
-                    <div className="space-y-3 pt-3 border-t border-[#232429]">
-                      <div className="flex flex-wrap gap-1">
-                        {event.highlights &&
-                          event.highlights.slice(0, 2).map((h, i) => (
-                            <span key={i} className="text-[10px] px-1.5 py-0.5 bg-[#17181d] border border-[#27272a] text-neutral-300">
-                              #{h}
-                            </span>
-                          ))}
-                      </div>
+                    <div className="flex items-center justify-between text-xs text-neutral-400">
+                      <span className="flex items-center gap-1 text-[11px] truncate max-w-[150px]">
+                        <MapPin size={12} className="text-neutral-500 shrink-0" />
+                        <span className="truncate">{event.location.split(',')[0]}</span>
+                      </span>
 
-                      <div className="flex items-center justify-between text-xs text-neutral-400">
-                        <span className="flex items-center gap-1 text-[11px] truncate max-w-[150px]">
-                          <MapPin size={12} className="text-neutral-500 shrink-0" />
-                          <span className="truncate">{event.location.split(',')[0]}</span>
+                      <div className="flex items-center gap-2">
+                        {!isPast && event.registrationOpen && event.registrationUrl ? (
+                          <a
+                            href={event.registrationUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px] hover:bg-[#33ff85] flex items-center gap-1 shadow-[2px_2px_0px_#000]"
+                          >
+                            <span>REGISTER</span>
+                            <ArrowUpRight size={11} />
+                          </a>
+                        ) : isPast ? (
+                          <button
+                            type="button"
+                            disabled
+                            aria-disabled="true"
+                            className="px-2 py-0.5 bg-[#17181c] border border-[#2b2c31] text-neutral-500 font-mono text-[10px] cursor-not-allowed opacity-60 pointer-events-none select-none"
+                            title="Event date is over. Registration is closed."
+                          >
+                            REG CLOSED
+                          </button>
+                        ) : null}
+                        <span className="text-[#00ff66] font-bold text-xs flex items-center gap-1 shrink-0">
+                          <span>VIEW</span>
+                          <ArrowUpRight size={12} />
                         </span>
-
-                        <div className="flex items-center gap-2">
-                          {!isPast && event.registrationOpen && event.registrationUrl ? (
-                            <a
-                              href={event.registrationUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px] hover:bg-[#33ff85] flex items-center gap-1 shadow-[2px_2px_0px_#000]"
-                            >
-                              <span>REGISTER</span>
-                              <ArrowUpRight size={11} />
-                            </a>
-                          ) : isPast ? (
-                            <button
-                              type="button"
-                              disabled
-                              aria-disabled="true"
-                              className="px-2 py-0.5 bg-[#17181c] border border-[#2b2c31] text-neutral-500 font-mono text-[10px] cursor-not-allowed opacity-60 pointer-events-none select-none"
-                              title="Event date is over. Registration is closed."
-                            >
-                              REG CLOSED
-                            </button>
-                          ) : null}
-                          <span className="text-[#00ff66] font-bold text-xs flex items-center gap-1 shrink-0">
-                            <span>VIEW</span>
-                            <ArrowUpRight size={12} />
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+
+            return (
+              <div className="space-y-8 sm:space-y-12">
+                {/* 1. UPCOMING EVENTS SESSION */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b-2 border-[#2b2c31] pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className={`w-2.5 h-2.5 rounded-full ${upcomingEvents.length > 0 ? 'bg-[#00ff66] animate-ping' : 'bg-[#f59e0b]'}`}></span>
+                      <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white tracking-wide font-mono uppercase">
+                        // UPCOMING EVENTS & WORKSHOPS
+                      </h2>
+                    </div>
+                    <span className="px-2.5 py-0.5 bg-[#14151a] border border-[#2b2c31] text-[11px] font-mono text-[#00ff66]">
+                      {upcomingEvents.length} SCHEDULED
+                    </span>
+                  </div>
+
+                  {upcomingEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {upcomingEvents.map((event) => renderEventCard(event, false))}
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-[#27272a] bg-[#0c0d10] p-6 sm:p-10 text-center space-y-2.5 shadow-[2px_2px_0px_#000]">
+                      <div className="w-10 h-10 mx-auto rounded-full bg-[#14151a] border border-[#2b2c31] flex items-center justify-center text-neutral-500">
+                        <Calendar size={18} />
+                      </div>
+                      <div className="text-neutral-200 font-bold text-sm tracking-wider font-mono">
+                        NO UPCOMING EVENTS
+                      </div>
+                      <p className="text-xs text-neutral-400 font-sans max-w-md mx-auto leading-relaxed">
+                        There are currently no upcoming events scheduled on the public calendar. Check back soon for announcements on our next workshops and hackathons!
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. PAST EVENTS SESSION */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between border-b-2 border-[#2b2c31] pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-neutral-500"></span>
+                      <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white tracking-wide font-mono uppercase">
+                        // PAST EVENTS & ARCHIVE
+                      </h2>
+                    </div>
+                    <span className="px-2.5 py-0.5 bg-[#14151a] border border-[#2b2c31] text-[11px] font-mono text-neutral-400">
+                      {pastEvents.length} COMPLETED
+                    </span>
+                  </div>
+
+                  {pastEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {pastEvents.map((event) => renderEventCard(event, true))}
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-[#27272a] bg-[#0c0d10] p-8 text-center text-xs text-neutral-400 font-mono">
+                      No past events match the active search or category filters.
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {filteredEvents.length === 0 && (
             <div className="border-2 border-dashed border-[#3f3f46] p-8 sm:p-12 text-center space-y-3">
@@ -464,7 +559,7 @@ export const Events: React.FC = () => {
               <div className="flex flex-wrap gap-3 text-xs text-neutral-300">
                 <div className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-[#00f0ff]" />
-                  <span>{activeEvent.date}</span>
+                  <span className="font-mono font-medium">{formatEventDate(activeEvent.date)}</span>
                 </div>
                 {activeEvent.time && (
                   <div className="flex items-center gap-1.5">

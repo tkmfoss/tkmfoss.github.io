@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Terminal, Users, CheckCircle2, Lock, History, ChevronDown, Mail } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '../components/Icons';
 import { subscribeLiveExecom, getCachedExecom } from '../services/dataService';
@@ -45,6 +45,22 @@ export const Execom: React.FC = () => {
 
   const hasCurrentTeam = execomData.current.length > 0;
 
+  // Group past execom members by tenure/year for horizontal year-by-year marking
+  const pastByTenure = useMemo(() => {
+    const groups: Record<string, typeof execomData.past> = {};
+    execomData.past.forEach((m) => {
+      const tenure = m.tenure || 'Archive';
+      if (!groups[tenure]) groups[tenure] = [];
+      groups[tenure].push(m);
+    });
+    // Sort tenures in descending order (e.g. '2025-26', '2024-25', ...)
+    const sortedTenures = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    return sortedTenures.map((tenure) => ({
+      tenure,
+      members: groups[tenure]
+    }));
+  }, [execomData.past]);
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 sm:space-y-12 font-mono">
       {/* Page Header Card */}
@@ -53,7 +69,7 @@ export const Execom: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 ${hasCurrentTeam ? 'bg-[#00ff66]' : 'bg-[#f59e0b]'} inline-block ${hasCurrentTeam ? '' : 'animate-ping'}`}></span>
             <span className={hasCurrentTeam ? 'text-[#00ff66] font-bold' : 'text-[#f59e0b] font-bold'}>
-              {hasCurrentTeam ? 'TRANSMISSION: LIVE EXECOM ROSTER' : 'TRANSMISSION: COMPILING 2026-2027'}
+              {hasCurrentTeam ? 'TRANSMISSION: ACTIVE EXECOM ROSTER' : 'TRANSMISSION: COMPILING 2026-2027'}
             </span>
           </div>
           <div>STATUS: {hasCurrentTeam ? 'RATIFIED & DEPLOYED' : 'PENDING RATIFICATION'}</div>
@@ -105,15 +121,15 @@ export const Execom: React.FC = () => {
             {execomData.current.map((member, idx) => (
               <div
                 key={member.id || idx}
-                className="brutal-card p-4 sm:p-5 flex flex-col justify-between space-y-4 group hover:border-[#00ff66] transition-all"
+                className="brutal-card p-4 sm:p-5 flex flex-col justify-between space-y-4 group hover:border-[#00ff66] transition-all hover:-translate-y-0.5"
               >
                 <div className="space-y-3">
-                  <div className="relative aspect-square bg-[#14151a] border border-[#27272a] overflow-hidden">
+                  <div className="relative aspect-square bg-[#14151a] border border-[#27272a] group-hover:border-[#00ff66] overflow-hidden transition-colors">
                     {member.photo ? (
                       <img
                         src={member.photo}
                         alt={member.name}
-                        className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-all duration-300"
+                        className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-300 transform group-hover:scale-105"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
                         }}
@@ -299,39 +315,57 @@ export const Execom: React.FC = () => {
         </div>
 
         {showArchive && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 pt-2 sm:pt-4 animate-fadeIn">
-            {execomData.past.map((member, idx) => (
-              <div
-                key={member.id || idx}
-                className="brutal-card p-3 space-y-2 text-center flex flex-col items-center"
-              >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#1f2026] border border-[#3f3f46] overflow-hidden">
-                  {member.photo ? (
-                    <img
-                      src={member.photo}
-                      alt={member.name}
-                      className="w-full h-full object-cover grayscale contrast-125"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-neutral-500">
-                      <Users size={20} />
-                    </div>
-                  )}
+          <div className="space-y-8 sm:space-y-10 pt-2 sm:pt-4 animate-fadeIn">
+            {pastByTenure.map(({ tenure, members }) => (
+              <div key={tenure} className="space-y-4">
+                {/* Horizontal marking divider with tenure badge */}
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t-2 border-[#2b2c31]"></div>
+                  <div className="flex-shrink mx-4 flex items-center gap-2 px-3 py-1 bg-[#14151a] border border-[#3b3d4a] text-xs font-mono font-bold shadow-[2px_2px_0px_#000]">
+                    <span className="w-2 h-2 rounded-full bg-[#00ff66]"></span>
+                    <span className="text-[#00ff66] tracking-wider">EXECOM {tenure}</span>
+                    <span className="text-neutral-500 text-[10px]">({members.length} MEMBERS)</span>
+                  </div>
+                  <div className="flex-grow border-t-2 border-[#2b2c31]"></div>
                 </div>
 
-                <div className="space-y-0.5 w-full">
-                  <div className="font-bold text-white text-[11px] sm:text-xs truncate w-full" title={member.name}>
-                    {member.name}
-                  </div>
-                  <div className="text-[9px] sm:text-[10px] text-[#00ff66] truncate w-full">
-                    {member.role}
-                  </div>
-                  {member.tenure && (
-                    <div className="text-[8px] text-neutral-500">{member.tenure}</div>
-                  )}
+                {/* Grid for this specific year */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                  {members.map((member, idx) => (
+                    <div
+                      key={member.id || idx}
+                      className="brutal-card p-3 space-y-2 text-center flex flex-col items-center group cursor-pointer hover:border-[#00ff66] transition-all hover:-translate-y-0.5"
+                    >
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#1f2026] border border-[#3f3f46] group-hover:border-[#00ff66] overflow-hidden transition-colors">
+                        {member.photo ? (
+                          <img
+                            src={member.photo}
+                            alt={member.name}
+                            className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-300 transform group-hover:scale-105"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-neutral-500 group-hover:text-[#00ff66] transition-colors">
+                            <Users size={20} />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-0.5 w-full">
+                        <div className="font-bold text-white text-[11px] sm:text-xs truncate w-full group-hover:text-[#00ff66] transition-colors" title={member.name}>
+                          {member.name}
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] text-[#00ff66] truncate w-full font-semibold">
+                          {member.role}
+                        </div>
+                        {member.tenure && (
+                          <div className="text-[8px] text-neutral-400 font-mono">{member.tenure}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

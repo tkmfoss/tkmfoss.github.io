@@ -28,7 +28,7 @@ interface HomeProps {
   onSelectTab: (tab: string) => void;
 }
 
-type EventStatusTab = 'ALL' | 'UPCOMING' | 'ONGOING' | 'COMPLETED';
+type EventStatusTab = 'ALL' | 'UPCOMING' | 'COMPLETED';
 type ResourceTab = 'PROJECTS' | 'RESOURCES';
 
 // Helper to determine if an event date has passed
@@ -36,7 +36,33 @@ export const isEventPast = (dateStr?: string, status?: string): boolean => {
   if (status === 'COMPLETED') return true;
   if (!dateStr) return false;
   const todayStr = new Date().toISOString().split('T')[0];
-  return dateStr < todayStr;
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    return dateStr < todayStr;
+  }
+  const parsed = new Date(dateStr);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.getTime() < new Date(todayStr).getTime();
+  }
+  return false;
+};
+
+// Formats ISO YYYY-MM-DD or raw strings into readable presentation date
+export const formatEventDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    try {
+      const [year, month, day] = dateStr.split('-');
+      const dateObj = new Date(Number(year), Number(month) - 1, Number(day));
+      return dateObj.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+  return dateStr;
 };
 
 export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
@@ -66,38 +92,32 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
     };
   }, []);
 
-  // Classify events into Upcoming, Ongoing, and Completed
-  const { upcomingEvents, ongoingEvents, completedEvents } = useMemo(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
+  // Classify events into Upcoming and Completed
+  const { upcomingEvents, completedEvents } = useMemo(() => {
     const upcoming: FosEvent[] = [];
-    const ongoing: FosEvent[] = [];
     const completed: FosEvent[] = [];
 
     events.forEach((ev) => {
       if (isEventPast(ev.date, ev.status)) {
         completed.push(ev);
-      } else if (ev.date === todayStr) {
-        ongoing.push(ev);
       } else {
         upcoming.push(ev);
       }
     });
 
-    return { upcomingEvents: upcoming, ongoingEvents: ongoing, completedEvents: completed };
+    return { upcomingEvents: upcoming, completedEvents: completed };
   }, [events]);
 
   const displayedEvents = useMemo(() => {
     switch (eventTab) {
       case 'UPCOMING':
         return upcomingEvents;
-      case 'ONGOING':
-        return ongoingEvents;
       case 'COMPLETED':
         return completedEvents;
       default:
         return events;
     }
-  }, [eventTab, events, upcomingEvents, ongoingEvents, completedEvents]);
+  }, [eventTab, events, upcomingEvents, completedEvents]);
 
   const curatedResources = [
     {
@@ -357,20 +377,6 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
             </button>
 
             <button
-              onClick={() => setEventTab('ONGOING')}
-              className={`px-3 py-1.5 border transition-all cursor-pointer flex items-center gap-1.5 ${eventTab === 'ONGOING'
-                  ? 'bg-[#00ff66] text-black font-bold border-[#00ff66]'
-                  : 'bg-[#14151a] text-neutral-400 border-[#2b2c31] hover:text-white'
-                }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff66] animate-ping"></span>
-              <span>LIVE</span>
-              <span className="text-[10px] px-1 bg-black text-[#00ff66] font-bold">
-                {ongoingEvents.length}
-              </span>
-            </button>
-
-            <button
               onClick={() => setEventTab('COMPLETED')}
               className={`px-3 py-1.5 border transition-all cursor-pointer ${eventTab === 'COMPLETED'
                   ? 'bg-neutral-300 text-black font-bold border-neutral-300'
@@ -386,10 +392,8 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
         {displayedEvents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {displayedEvents.slice(0, 3).map((event) => {
-              const todayStr = new Date().toISOString().split('T')[0];
               const isPast = isEventPast(event.date, event.status);
-              const isLive = event.date === todayStr;
-              const isUpcoming = !isPast && !isLive;
+              const isUpcoming = !isPast;
 
               return (
                 <div
@@ -421,12 +425,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
 
                     {/* Status Badge */}
                     <div className="absolute top-2 left-2 flex items-center gap-1.5 pointer-events-none">
-                      {isLive ? (
-                        <span className="px-2 py-0.5 bg-[#00ff66] text-black font-mono font-bold text-[10px] flex items-center gap-1 animate-pulse">
-                          <span className="w-1.5 h-1.5 bg-black rounded-full"></span>
-                          LIVE NOW
-                        </span>
-                      ) : isUpcoming ? (
+                      {isUpcoming ? (
                         <span className="px-2 py-0.5 bg-[#00f0ff] text-black font-mono font-bold text-[10px]">
                           UPCOMING
                         </span>
@@ -442,7 +441,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
                     </div>
 
                     <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/90 border border-white/20 font-mono text-[10px] text-white pointer-events-none">
-                      {event.date}
+                      {formatEventDate(event.date)}
                     </div>
                   </div>
 

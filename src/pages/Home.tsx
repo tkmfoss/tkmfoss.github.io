@@ -33,17 +33,17 @@ type ResourceTab = 'PROJECTS' | 'RESOURCES';
 
 // Helper to determine if an event date has passed
 export const isEventPast = (dateStr?: string, status?: string): boolean => {
-  if (status === 'COMPLETED') return true;
-  if (!dateStr) return false;
-  const todayStr = new Date().toISOString().split('T')[0];
-  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-    return dateStr < todayStr;
+  if (dateStr) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      return dateStr < todayStr;
+    }
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.getTime() < new Date(todayStr).getTime();
+    }
   }
-  const parsed = new Date(dateStr);
-  if (!isNaN(parsed.getTime())) {
-    return parsed.getTime() < new Date(todayStr).getTime();
-  }
-  return false;
+  return status === 'COMPLETED';
 };
 
 // Formats ISO YYYY-MM-DD or raw strings into readable presentation date
@@ -462,14 +462,14 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
                     <div className="pt-3 border-t border-[#232429] flex items-center justify-between font-mono text-[11px] text-neutral-400">
                       <span className="truncate max-w-[130px]">{event.location?.split(',')[0]}</span>
                       <div className="flex items-center gap-2">
-                        {!isPast && event.registrationOpen && event.registrationUrl ? (
+                        {event.registrationOpen && event.registrationUrl ? (
                           <a
                             href={event.registrationUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="px-2 py-1 bg-[#00ff66] text-black font-bold text-[10px] hover:bg-[#33ff85] flex items-center gap-1 cursor-pointer shadow-[2px_2px_0px_#000]"
                           >
-                            <span>REGISTER</span>
+                            <span>{isPast ? 'SPOT REG' : 'REGISTER'}</span>
                             <ArrowUpRight size={11} />
                           </a>
                         ) : isPast ? (
@@ -746,15 +746,26 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
             <div className="flex items-center justify-between border-b border-[#23242a] pb-3 text-xs text-neutral-400 font-mono">
               <div className="flex items-center gap-2">
                 <span className="text-[#00ff66] font-bold">[{selectedEvent.category}] // {selectedEvent.year}</span>
-                {!isEventPast(selectedEvent.date, selectedEvent.status) && selectedEvent.registrationOpen ? (
+                {isEventPast(selectedEvent.date, selectedEvent.status) ? (
+                  <>
+                    <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 font-mono font-bold text-[10px]">
+                      EVENT CONCLUDED
+                    </span>
+                    {selectedEvent.registrationOpen && selectedEvent.registrationUrl && (
+                      <span className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px] animate-pulse">
+                        SPOT REG OPEN
+                      </span>
+                    )}
+                  </>
+                ) : selectedEvent.registrationOpen ? (
                   <span className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px]">
                     REGISTRATION ACTIVE
                   </span>
-                ) : isEventPast(selectedEvent.date, selectedEvent.status) ? (
+                ) : (
                   <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 font-mono font-bold text-[10px]">
-                    EVENT CONCLUDED
+                    REG CLOSED
                   </span>
-                ) : null}
+                )}
               </div>
               <button
                 onClick={() => setSelectedEvent(null)}
@@ -835,7 +846,28 @@ export const Home: React.FC<HomeProps> = ({ onSelectTab }) => {
               )}
 
               {/* Action Bar inside modal */}
-              {!isEventPast(selectedEvent.date, selectedEvent.status) && selectedEvent.registrationOpen && selectedEvent.registrationUrl ? (
+              {isEventPast(selectedEvent.date, selectedEvent.status) && selectedEvent.registrationOpen && selectedEvent.registrationUrl ? (
+                <div className="p-3 bg-[#112415] border-2 border-[#00ff66] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[#00ff66] font-bold text-xs flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse"></span>
+                      <span>// SPOT REGISTRATION OPEN</span>
+                    </div>
+                    <div className="text-neutral-300 text-[11px]">
+                      {selectedEvent.contactPerson ? `Contact: ${selectedEvent.contactPerson}` : 'Event date has arrived/passed, but spot registration is currently open!'}
+                    </div>
+                  </div>
+                  <a
+                    href={selectedEvent.registrationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-[#00ff66] text-black font-bold text-xs hover:bg-[#33ff85] transition-all flex items-center gap-1.5 shadow-[2px_2px_0px_#000] shrink-0 cursor-pointer"
+                  >
+                    <span>SPOT REGISTER</span>
+                    <ArrowUpRight size={14} />
+                  </a>
+                </div>
+              ) : !isEventPast(selectedEvent.date, selectedEvent.status) && selectedEvent.registrationOpen && selectedEvent.registrationUrl ? (
                 <div className="p-3 bg-[#112415] border-2 border-[#00ff66] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <div className="text-[#00ff66] font-bold text-xs">// REGISTRATION IS CURRENTLY OPEN</div>

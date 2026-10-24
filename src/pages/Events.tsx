@@ -6,17 +6,17 @@ import { PosterLightbox } from '../components/PosterLightbox';
 
 // Helper to determine if an event date has passed
 export const isEventPast = (dateStr?: string, status?: string): boolean => {
-  if (status === 'COMPLETED') return true;
-  if (!dateStr) return false;
-  const todayStr = new Date().toISOString().split('T')[0];
-  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-    return dateStr < todayStr;
+  if (dateStr) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      return dateStr < todayStr;
+    }
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.getTime() < new Date(todayStr).getTime();
+    }
   }
-  const parsed = new Date(dateStr);
-  if (!isNaN(parsed.getTime())) {
-    return parsed.getTime() < new Date(todayStr).getTime();
-  }
-  return false;
+  return status === 'COMPLETED';
 };
 
 // Formats ISO YYYY-MM-DD or raw strings into readable presentation date
@@ -262,9 +262,9 @@ export const Events: React.FC = () => {
                     <span className="px-2 py-0.5 bg-black/90 border border-white/20 text-[10px] text-[#00ff66] font-bold">
                       [{event.category}]
                     </span>
-                    {!isPast && event.registrationOpen && (
+                    {event.registrationOpen && event.registrationUrl && (
                       <span className="px-1.5 py-0.5 bg-[#00ff66] text-black font-mono font-bold text-[9px] animate-pulse">
-                        REGISTRATION OPEN
+                        {isPast ? 'SPOT REG OPEN' : 'REGISTRATION OPEN'}
                       </span>
                     )}
                   </div>
@@ -316,7 +316,7 @@ export const Events: React.FC = () => {
                       </span>
 
                       <div className="flex items-center gap-2">
-                        {!isPast && event.registrationOpen && event.registrationUrl ? (
+                        {event.registrationOpen && event.registrationUrl ? (
                           <a
                             href={event.registrationUrl}
                             target="_blank"
@@ -324,7 +324,7 @@ export const Events: React.FC = () => {
                             onClick={(e) => e.stopPropagation()}
                             className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px] hover:bg-[#33ff85] flex items-center gap-1 shadow-[2px_2px_0px_#000]"
                           >
-                            <span>REGISTER</span>
+                            <span>{isPast ? 'SPOT REG' : 'REGISTER'}</span>
                             <ArrowUpRight size={11} />
                           </a>
                         ) : isPast ? (
@@ -333,7 +333,7 @@ export const Events: React.FC = () => {
                             disabled
                             aria-disabled="true"
                             className="px-2 py-0.5 bg-[#17181c] border border-[#2b2c31] text-neutral-500 font-mono text-[10px] cursor-not-allowed opacity-60 pointer-events-none select-none"
-                            title="Event date is over. Registration is closed."
+                            title="Event date has passed. Registration is closed."
                           >
                             REG CLOSED
                           </button>
@@ -533,15 +533,26 @@ export const Events: React.FC = () => {
             <div className="flex items-center justify-between border-b border-[#23242a] pb-3 text-xs text-neutral-400">
               <div className="flex items-center gap-2">
                 <span className="text-[#00ff66] font-bold">[{activeEvent.category}] // {activeEvent.year}</span>
-                {!isEventPast(activeEvent.date, activeEvent.status) && activeEvent.registrationOpen ? (
+                {isEventPast(activeEvent.date, activeEvent.status) ? (
+                  <>
+                    <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 font-mono font-bold text-[10px]">
+                      EVENT CONCLUDED
+                    </span>
+                    {activeEvent.registrationOpen && activeEvent.registrationUrl && (
+                      <span className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px] animate-pulse">
+                        SPOT REG OPEN
+                      </span>
+                    )}
+                  </>
+                ) : activeEvent.registrationOpen ? (
                   <span className="px-2 py-0.5 bg-[#00ff66] text-black font-bold text-[10px]">
                     REGISTRATION ACTIVE
                   </span>
-                ) : isEventPast(activeEvent.date, activeEvent.status) ? (
+                ) : (
                   <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 font-mono font-bold text-[10px]">
-                    EVENT CONCLUDED
+                    REG CLOSED
                   </span>
-                ) : null}
+                )}
               </div>
               <button
                 onClick={() => setActiveEvent(null)}
@@ -628,7 +639,28 @@ export const Events: React.FC = () => {
               )}
 
               {/* Action Bar inside modal */}
-              {!isEventPast(activeEvent.date, activeEvent.status) && activeEvent.registrationOpen && activeEvent.registrationUrl ? (
+              {isEventPast(activeEvent.date, activeEvent.status) && activeEvent.registrationOpen && activeEvent.registrationUrl ? (
+                <div className="p-3 bg-[#112415] border-2 border-[#00ff66] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[#00ff66] font-bold text-xs flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse"></span>
+                      <span>// SPOT REGISTRATION OPEN</span>
+                    </div>
+                    <div className="text-neutral-300 text-[11px]">
+                      {activeEvent.contactPerson ? `Contact: ${activeEvent.contactPerson}` : 'Event is underway/concluded, but spot registration is currently open!'}
+                    </div>
+                  </div>
+                  <a
+                    href={activeEvent.registrationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-[#00ff66] text-black font-bold text-xs hover:bg-[#33ff85] transition-all flex items-center gap-1.5 shadow-[2px_2px_0px_#000] shrink-0"
+                  >
+                    <span>SPOT REGISTER</span>
+                    <ArrowUpRight size={14} />
+                  </a>
+                </div>
+              ) : !isEventPast(activeEvent.date, activeEvent.status) && activeEvent.registrationOpen && activeEvent.registrationUrl ? (
                 <div className="p-3 bg-[#112415] border-2 border-[#00ff66] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <div className="text-[#00ff66] font-bold text-xs">// REGISTRATION IS CURRENTLY OPEN</div>
